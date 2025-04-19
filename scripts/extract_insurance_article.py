@@ -14,7 +14,7 @@ args = parser.parse_args()
 insurance_name = args.insurance_name
 file_path = args.file
 start_page = args.start_page
-end_page = args.end_page
+end_page = int(args.end_page)+1
 
 
 INDEX_START_PATTERN = re.compile(r"^\s*제\s*\d+\s*[관조]|^\s*\[별표\s*\d+\]")
@@ -122,7 +122,9 @@ def get_article_from_page(insurance_name: str, pages: list[str], page_indexes: l
     
     # 목차 순회
     for loop_index, (origin_title, article_title, page_number) in enumerate(page_indexes):
-        if end_page < int(page_number):
+        if int(page_number) < start_page:
+            continue
+        if int(page_number) > end_page:
             break
         
         # 다음 목차 조문 존재 여부 확인
@@ -138,9 +140,14 @@ def get_article_from_page(insurance_name: str, pages: list[str], page_indexes: l
         
         # content 조문 내용 추출
         if next_article_title:
-            if next_article_start_index := content.find(next_article_title):
-                article_start_index = content.find(origin_title)
+            # if "별표" in next_article_title or "별지" in next_article_title:
+            #     next_article_title = re.sub(r"(\[(?:별표|별지)\s*\d+\]).*", r"\1", next_article_title)
+            article_start_index = content.find(origin_title)
+            next_article_start_index = content.find(next_article_title)
+            if next_article_start_index >= 0:
                 content = content[article_start_index:next_article_start_index]
+            else:
+                content = content[article_start_index:end_page]
         else:
             # next_article_title 없는 경우 현재 목차 조문 시작 페이지부터 끝 페이지까지 조문 내용 추출
             content = content[content.find(origin_title):end_page]
