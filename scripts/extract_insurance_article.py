@@ -104,14 +104,14 @@ def process_index(text: str) -> list[str]:
     return get_article_from_index(filtered_index, text)
 
 
-def process_page(pages: list[str], page_indexes: list[str], end_page: int) -> list[str]:
+def process_page(insurance_name: str, pages: list[str], page_indexes: list[str], end_page: int) -> list[str]:
     """
     페이지 조문 내용 추출 함수
     """
-    return json.dumps(get_article_from_page(pages, page_indexes, end_page), ensure_ascii=False)
+    return json.dumps(get_article_from_page(insurance_name, pages, page_indexes, end_page), ensure_ascii=False)
 
 
-def get_article_from_page(pages: list[str], page_indexes: list[str], end_page: int) -> list[str]:
+def get_article_from_page(insurance_name: str, pages: list[str], page_indexes: list[str], end_page: int) -> list[str]:
     """
     페이지 조문 내용 추출 함수
     """
@@ -138,7 +138,7 @@ def get_article_from_page(pages: list[str], page_indexes: list[str], end_page: i
             content = content[content.find(origin_title):end_page]
 
         data.append({
-            "origin_title": origin_title,
+            "insurance_name": insurance_name,
             "article_title": article_title,
             "content": get_safe_content(content),
             "page_number": int(page_number)
@@ -150,7 +150,7 @@ text, pages = read_pdf(file_path)
 page_indexes = process_index(text)
 
 
-page_contents = process_page(pages, page_indexes, end_page)
+page_contents = process_page(insurance_name, pages, page_indexes, end_page)
 
 print("page_contents", page_contents)
 
