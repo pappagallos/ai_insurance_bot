@@ -46,9 +46,7 @@ def extract_index(text: str) -> str:
     """
     text = REPLACE_WHITESPACE.sub(" ", text)
     text = re.sub(r"\】(\d+)", r"】 \1", text)
-    print("text", text)
-    index = EXTRACT_INDEX.findall(text)
-    return index
+    return EXTRACT_INDEX.findall(text)
 
 
 def filter_index(index: list[str]) -> list[str]:
