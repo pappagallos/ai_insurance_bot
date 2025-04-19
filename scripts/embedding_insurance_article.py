@@ -78,8 +78,8 @@ while True:
     {"insurance_name": "369 뉴테크 NH 암보험_무배당_2404_주계약_약관", "article_title": "제1관 목적 및 용어의 정의", "content": "", "page_number": 45}
     """
     try:
-        continue_flag = True
         insert_embedding_article(item["insurance_name"], item["article_title"], item["content"], get_embedding(item["content"]))
+        continue_flag = True
     except Exception as e:
         continue_flag = False
         print("Sleep...")
