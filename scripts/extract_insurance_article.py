@@ -74,15 +74,18 @@ def get_article_from_index(indexes: list[str]) -> list[tuple[str, str, str]]:
     """
     목차 조문, 페이지 추출 함수
     """
+    def get_article(article_title: str, item: str) -> tuple[str, str, str]:
+        return (article_title, f"{item[1]} {item[2].replace('【', '').replace('】', '').strip()}", item[3])
+    
     articles = []
     for item in indexes:
         article_title = re.sub(r"\s*\d+\s*$", "", item)
         if match := EXTRACT_ARTICLE.match(item):
-            articles.append((article_title, f"{match[1]} {match[2].replace('【', '').replace('】', '').strip()}", match[3]))
+            articles.append(get_article(article_title, match))
         elif match := EXTRACT_ARTICLE_WITH_CHAPTER.match(item):
-            articles.append((article_title, f"{match[1]} {match[2].replace('【', '').replace('】', '').strip()}", match[3]))
+            articles.append(get_article(article_title, match))
         elif match := EXTRACT_SEPARATE_SHEET.match(item):
-            articles.append((article_title, f"{match[1]} {match[2].replace('【', '').replace('】', '').strip()}", match[3]))
+            articles.append(get_article(article_title, match))
     return articles
 
 
