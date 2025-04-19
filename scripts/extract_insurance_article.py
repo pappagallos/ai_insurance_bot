@@ -161,6 +161,7 @@ page_indexes = process_index(text)
 
 page_contents = process_page(insurance_name, pages, page_indexes, end_page)
 
-print("page_contents", page_contents)
+with open(f"{insurance_name}.json", "w+") as f:
+    f.write(page_contents)
 
 # python3 extract_insurance_article.py --insurance_name "369뉴테크NH암보험 |무배당|_2404 주계약 약관" --file "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf" --start_page 45 --end_page 103
