@@ -70,12 +70,12 @@ def filter_index(index: list[str]) -> list[str]:
     return filtered_index
 
 
-def get_article_from_index(index: list[str], text: str) -> list[str]:
+def get_article_from_index(indexes: list[str]) -> list[tuple[str, str, str]]:
     """
     목차 조문, 페이지 추출 함수
     """
     articles = []
-    for item in index:
+    for item in indexes:
         article_title = re.sub(r"\s*\d+\s*$", "", item)
         if match := EXTRACT_ARTICLE.match(item):
             articles.append((article_title, f"{match[1]} {match[2].replace('【', '').replace('】', '').strip()}", match[3]))
@@ -99,44 +99,50 @@ def process_index(text: str) -> list[str]:
     """
     목차 처리 함수
     """
-    index = extract_index(text)
-    filtered_index = filter_index(index)
-    return get_article_from_index(filtered_index, text)
+    indexes = extract_index(text)
+    filtered_indexes = filter_index(indexes)
+    return get_article_from_index(filtered_indexes)
 
 
-def process_page(insurance_name: str, pages: list[str], page_indexes: list[str], end_page: int) -> list[str]:
+def process_page(insurance_name: str, pages: list[str], page_indexes: list[str], end_page: int) -> json:
     """
     페이지 조문 내용 추출 함수
     """
     return json.dumps(get_article_from_page(insurance_name, pages, page_indexes, end_page), ensure_ascii=False)
 
 
-def get_article_from_page(insurance_name: str, pages: list[str], page_indexes: list[str], end_page: int) -> list[str]:
+def get_article_from_page(insurance_name: str, pages: list[str], page_indexes: list[str], end_page: int) -> list[object]:
     """
     페이지 조문 내용 추출 함수
     """
     data = []
     
+    # 목차 순회
     for loop_index, (origin_title, article_title, page_number) in enumerate(page_indexes):
         if end_page < int(page_number):
             break
-            
+        
+        # 다음 목차 조문 존재 여부 확인
         exists_next_page = loop_index+1 < len(page_indexes)
         next_start_page_number = int(page_indexes[loop_index+1][2]) if exists_next_page else end_page
         next_article_title = page_indexes[loop_index+1][0] if exists_next_page else None
         
+        # 페이지 조문 내용 추출, 줄바꿈 제거
         content = ""
         for page in pages[int(page_number)-1:next_start_page_number]:
             content += page.extract_text()
         content = REPLACE_WHITESPACE.sub(" ", content)
         
+        # content 조문 내용 추출
         if next_article_title:
             if next_article_start_index := content.find(next_article_title):
                 article_start_index = content.find(origin_title)
                 content = content[article_start_index:next_article_start_index]
         else:
+            # next_article_title 없는 경우 현재 목차 조문 시작 페이지부터 끝 페이지까지 조문 내용 추출
             content = content[content.find(origin_title):end_page]
 
+        # 추출 데이터 추가
         data.append({
             "insurance_name": insurance_name,
             "article_title": article_title,
