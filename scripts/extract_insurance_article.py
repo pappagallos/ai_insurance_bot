@@ -52,6 +52,9 @@ def extract_index(text: str) -> str:
 
 
 def filter_index(index: list[str]) -> list[str]:
+    """
+    목차 필터링 함수
+    """
     # 실제 목차만 필터링하는 추가 로직
     filtered_index = []
     for item in index:
@@ -87,10 +90,6 @@ def process_index(text: str) -> list[str]:
     index = extract_index(text)
     filtered_index = filter_index(index)
     return get_article_from_index(filtered_index, text)
-
-
-def extract_insurance_article(file_path: str) -> list[str]:
-    return extract_index(text)
 
 
 text, total_pages, filted_pages = read_pdf(file_path)
