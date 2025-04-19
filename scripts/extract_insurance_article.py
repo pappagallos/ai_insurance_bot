@@ -1,4 +1,5 @@
 import re
+import json
 import argparse
 from pypdf import PdfReader
 
@@ -16,14 +17,15 @@ start_page = args.start_page
 end_page = args.end_page
 
 
-INDEX_START_PATTERN = re.compile(r"^\s*제\s*\d+\s*[관조]")
+INDEX_START_PATTERN = re.compile(r"^\s*제\s*\d+\s*[관조]|^\s*\[별표\s*\d+\]")
 INDEX_END_PATTERN = re.compile(r"\s*\d+\s$")
 
 REPLACE_WHITESPACE = re.compile(r"[\s\n]+")
 
-EXTRACT_INDEX = re.compile(r"제\s*\d+\s*[관조]\s*【?[\s\w\‘\’\,\'\(\)\:\-]+】?\s\d{1,3}\s*|제\s*\d+\s*조의\d{1,2}\s*【?[\s\w\‘\’\,\'\(\)\:\-]+】?\s\d{1,3}\s*")
+EXTRACT_INDEX = re.compile(r"제\s*\d+\s*[관조]\s*【?[\s\w\‘\’\,\'\(\)\:\-]+】?\s\d{1,3}\s*|제\s*\d+\s*조의\d{1,2}\s*【?[\s\w\‘\’\,\'\(\)\:\-]+】?\s\d{1,3}\s*|\[별표\s*\d+\]\s*[\s\w\‘\’\,\'\(\)\:\-]+\s\d{1,3}\s*")
 EXTRACT_ARTICLE = re.compile(r"(제\s*\d+\s*[관조])(【?[\s\w\‘\’\,\'\(\)\:\-]+】?)\s(\d+)")
 EXTRACT_ARTICLE_WITH_CHAPTER = re.compile(r"(제\s*\d+\s*조의\s*\d{1,2})(【?[\s\w\‘\’\,\'\(\)\:\-]+】?)\s(\d+)")
+EXTRACT_SEPARATE_SHEET = re.compile(r"(\[별표\s*\d+\])\s*(【?[\s\w\‘\’\,\'\(\)\:\-]+】?)\s(\d+)")
 
 EXCLUDE_INDEX = re.compile(r"^\s*제\s*\d+조\s*\(|제\s\d+\s$|취급방침|제\d+호")
 
@@ -37,7 +39,7 @@ def read_pdf(file_path: str) -> str:
     pages = reader.pages
     for page in pages:
         text += page.extract_text()
-    return (text, pages, pages[start_page-1:end_page+1])
+    return (text, pages)
 
 
 def extract_index(text: str) -> str:
@@ -74,11 +76,23 @@ def get_article_from_index(index: list[str], text: str) -> list[str]:
     """
     articles = []
     for item in index:
+        article_title = re.sub(r"\s*\d+\s*$", "", item)
         if match := EXTRACT_ARTICLE.match(item):
-            articles.append((f"{match[1]} {match[2].replace('【', '').replace('】', '').strip()}", match[3]))
+            articles.append((article_title, f"{match[1]} {match[2].replace('【', '').replace('】', '').strip()}", match[3]))
         elif match := EXTRACT_ARTICLE_WITH_CHAPTER.match(item):
-            articles.append((f"{match[1]} {match[2].replace('【', '').replace('】', '').strip()}", match[3]))
+            articles.append((article_title, f"{match[1]} {match[2].replace('【', '').replace('】', '').strip()}", match[3]))
+        elif match := EXTRACT_SEPARATE_SHEET.match(item):
+            articles.append((article_title, f"{match[1]} {match[2].replace('【', '').replace('】', '').strip()}", match[3]))
     return articles
+
+
+def get_safe_content(content: str) -> str:
+    """
+    안전한 콘텐츠 추출 함수
+    """
+    # 특수문자와 제어문자 제거
+    content = re.sub(r"[\x00-\x1F\x7F-\x9F\uf000-\uffff]", "", content)
+    return content.strip()
 
 
 def process_index(text: str) -> list[str]:
@@ -90,12 +104,54 @@ def process_index(text: str) -> list[str]:
     return get_article_from_index(filtered_index, text)
 
 
-text, total_pages, filted_pages = read_pdf(file_path)
+def process_page(pages: list[str], page_indexes: list[str], end_page: int) -> list[str]:
+    """
+    페이지 조문 내용 추출 함수
+    """
+    return json.dumps(get_article_from_page(pages, page_indexes, end_page), ensure_ascii=False)
 
 
+def get_article_from_page(pages: list[str], page_indexes: list[str], end_page: int) -> list[str]:
+    """
+    페이지 조문 내용 추출 함수
+    """
+    data = []
+    
+    for loop_index, (origin_title, article_title, page_number) in enumerate(page_indexes):
+        if end_page < int(page_number):
+            break
+            
+        exists_next_page = loop_index+1 < len(page_indexes)
+        next_start_page_number = int(page_indexes[loop_index+1][2]) if exists_next_page else end_page
+        next_article_title = page_indexes[loop_index+1][0] if exists_next_page else None
+        
+        content = ""
+        for page in pages[int(page_number)-1:next_start_page_number]:
+            content += page.extract_text()
+        content = REPLACE_WHITESPACE.sub(" ", content)
+        
+        if next_article_title:
+            if next_article_start_index := content.find(next_article_title):
+                article_start_index = content.find(origin_title)
+                content = content[article_start_index:next_article_start_index]
+        else:
+            content = content[content.find(origin_title):end_page]
+
+        data.append({
+            "origin_title": origin_title,
+            "article_title": article_title,
+            "content": get_safe_content(content),
+            "page_number": int(page_number)
+        })
+    return data
+
+
+text, pages = read_pdf(file_path)
 page_indexes = process_index(text)
-print(page_indexes, len(page_indexes))
 
-# print(extract_insurance_article(file_path))
+
+page_contents = process_page(pages, page_indexes, end_page)
+
+print("page_contents", page_contents)
 
 # python3 extract_insurance_article.py --insurance_name "369뉴테크NH암보험 |무배당|_2404 주계약 약관" --file "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf" --start_page 45 --end_page 103
