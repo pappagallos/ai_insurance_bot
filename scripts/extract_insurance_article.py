@@ -140,8 +140,6 @@ def get_article_from_page(insurance_name: str, pages: list[str], page_indexes: l
         
         # content 조문 내용 추출
         if next_article_title:
-            # if "별표" in next_article_title or "별지" in next_article_title:
-            #     next_article_title = re.sub(r"(\[(?:별표|별지)\s*\d+\]).*", r"\1", next_article_title)
             article_start_index = content.find(origin_title)
             next_article_start_index = content.find(next_article_title)
             if next_article_start_index >= 0:
