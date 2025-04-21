@@ -1,9 +1,13 @@
+import cohere
 import psycopg2
 from google import genai
 
-from config import GEMINI_API_KEY, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST
+from config import GEMINI_API_KEY, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, OPENAI_API_KEY, COHERE_API_KEY
 
 client = genai.Client(api_key=GEMINI_API_KEY)
+
+cohere_client = cohere.ClientV2(api_key=COHERE_API_KEY)
+
 
 postgres_connection = psycopg2.connect(
     dbname=POSTGRES_DB,
@@ -37,3 +41,4 @@ cursor.execute("SELECT * FROM embedding_article ORDER BY embedding <-> %s::vecto
 print("id", "\t", "insurance_name", "\t", "article_title", "\t", "article_content")
 for [id, insurance_name, article_title, article_content, embedding] in cursor.fetchall():
     print(id, "\t", insurance_name, "\t", article_title, "\t", article_content)
+
