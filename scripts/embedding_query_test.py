@@ -1,6 +1,4 @@
 import psycopg2
-import numpy as np
-
 from google import genai
 
 from config import GEMINI_API_KEY, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST
