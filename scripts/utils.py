@@ -22,7 +22,7 @@ cursor = postgres_connection.cursor()
 
 def get_embedding(content: str, model: str = "gemini-embedding-exp-03-07") -> list[float]:
     """
-    벡터 테이블 생성 쿼리
+    벡터 생성
     """
     result = genai_client.models.embed_content(
         model=model,
