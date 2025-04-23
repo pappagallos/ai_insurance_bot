@@ -149,12 +149,17 @@ def get_article_from_page(page_info: list[str]) -> list[object]:
     articles = []
     
     # 목차 순회
+    prev_article_number = 0
     for loop_index, (origin_title, article_title, page_number) in enumerate(page_indexes):
         if int(page_number) < start_page:
             continue
         if int(page_number) > end_page:
             break
-        
+        if match := re.match("^제(\d+)관", origin_title.strip()):
+            current_article_number = int(match[1])
+            if current_article_number < prev_article_number:
+                break
+            prev_article_number = current_article_number
         # 다음 목차 조문 존재 여부 확인
         exists_next_page = loop_index+1 < len(page_indexes)
         next_start_page_number = int(page_indexes[loop_index+1][2]) if exists_next_page else end_page
