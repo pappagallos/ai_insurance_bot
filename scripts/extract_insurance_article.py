@@ -160,6 +160,7 @@ def get_article_from_page(page_info: list[str]) -> list[object]:
             if current_article_number < prev_article_number:
                 break
             prev_article_number = current_article_number
+            
         # 다음 목차 조문 존재 여부 확인
         exists_next_page = loop_index+1 < len(page_indexes)
         next_start_page_number = int(page_indexes[loop_index+1][2]) if exists_next_page else end_page
@@ -180,10 +181,10 @@ def get_article_from_page(page_info: list[str]) -> list[object]:
             if next_article_start_index >= 0:
                 content = content[article_start_index:next_article_start_index]
             else:
-                content = content[article_start_index:end_page]
+                content = content[article_start_index:]
         else:
             # next_article_title 없는 경우 현재 목차 조문 시작 페이지부터 끝 페이지까지 조문 내용 추출
-            content = content[content.find(origin_title):end_page]
+            content = content[content.find(origin_title):]
 
         # 추출 데이터 추가
         articles.append({
