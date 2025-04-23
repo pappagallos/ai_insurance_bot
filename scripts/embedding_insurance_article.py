@@ -22,11 +22,18 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 [벡터 테이블]
 create table embedding_article (
 	id int primary key generated always as identity,
+	company_name varchar(255),
+	category varchar(255),
 	insurance_name varchar(255),
+	insurance_type varchar(255),
+	sales_date varchar(255),
+	index_title varchar(255),
+	file_path text,
 	article_title varchar(255),
 	article_content text,
 	embedding vector(3072)
 )
+
 """
 postgres_connection = psycopg2.connect(
     dbname=POSTGRES_DB,
@@ -48,11 +55,11 @@ def get_embedding(content: str, model: str = "gemini-embedding-exp-03-07") -> li
     return result.embeddings[0].values
 
 
-def insert_embedding_article(insurance_name: str, article_title: str, article_content: str, embedding: list[float]):
+def insert_embedding_article(company_name: str, category: str, insurance_name: str, insurance_type: str, sales_date: str, index_title: str, file_path: str, article_title: str, article_content: str, embedding: list[float]):
     """
     INSERT 쿼리 함수
     """
-    cursor.execute("INSERT INTO embedding_article (insurance_name, article_title, article_content, embedding) VALUES (%s, %s, %s, %s)", (insurance_name, article_title, article_content, embedding))
+    cursor.execute("INSERT INTO embedding_article (company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, article_title, article_content, embedding) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, article_title, article_content, embedding))
     postgres_connection.commit()
 
 
@@ -75,10 +82,21 @@ while True:
         
     """
     [json 예시]
-    {"insurance_name": "369 뉴테크 NH 암보험_무배당_2404_주계약_약관", "article_title": "제1관 목적 및 용어의 정의", "content": "", "page_number": 45}
+    {
+        "company_name": "농협생명보험", 
+        "category": "암보험", 
+        "insurance_name": "369뉴테크NH암보험", 
+        "insurance_type": "무배당", 
+        "sales_date": "2025-01", 
+        "index_title": "제1관 목적 및 용어의 정의", 
+        "file_path": "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf", 
+        "article_title": "제1관 목적 및 용어의 정의", 
+        "content": "", 
+        "page_number": 45
+    }
     """
     try:
-        insert_embedding_article(item["insurance_name"], item["article_title"], item["content"], get_embedding(item["content"]))
+        insert_embedding_article(item["company_name"], item["insurance_name"], item["insurance_type"], item["sales_date"], item["index_title"], item["file_path"], item["article_title"], item["article_content"], get_embedding(item["article_content"]))
         continue_flag = True
     except Exception as e:
         continue_flag = False
