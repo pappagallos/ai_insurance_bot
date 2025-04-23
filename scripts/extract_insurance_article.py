@@ -7,11 +7,11 @@ from pypdf import PdfReader
 parser = argparse.ArgumentParser()
 parser.add_argument("--company_name", type=str, required=True)
 parser.add_argument("--category", type=str, required=True)
-parser.add_argument("--type", type=str, required=True)
-parser.add_argument("--name", type=str, required=True)
-parser.add_argument("--date", type=str, required=True)
-parser.add_argument("--title", type=str, required=True)
-parser.add_argument("--file", type=str, required=True)
+parser.add_argument("--insurance_type", type=str, required=True)
+parser.add_argument("--insurance_name", type=str, required=True)
+parser.add_argument("--sales_date", type=str, required=True)
+parser.add_argument("--index_title", type=str, required=True)
+parser.add_argument("--file_path", type=str, required=True)
 parser.add_argument("--start_page", type=int, required=True)
 parser.add_argument("--end_page", type=int, required=True)
 
@@ -19,13 +19,13 @@ args = parser.parse_args()
 
 company_name = args.company_name
 category = args.category
-type = args.type
-name = args.name
-date = args.date
-title = args.title
-file_path = args.file
-start_page = args.start_page
-end_page = int(args.end_page)+1
+insurance_type = args.insurance_type
+insurance_name = args.insurance_name
+sales_date = args.sales_date
+index_title = args.index_title
+file_path = args.file_path
+start_page = int(args.start_page)
+end_page = int(args.end_page)
 
 
 INDEX_START_PATTERN = re.compile(r"^\s*제\s*\d+\s*[관조]|^\s*\[별표\s*\d+\]")
@@ -117,12 +117,27 @@ def process_index(text: str) -> list[str]:
     filtered_indexes = filter_index(indexes)
     return get_article_from_index(filtered_indexes)
 
+"""
+    [json 예시]
+    {
+        "company_name": "농협생명보험", 
+        "category": "암보험", 
+        "insurance_name": "369뉴테크NH암보험", 
+        "insurance_type": "무배당", 
+        "sales_date": "2025-01", 
+        "index_title": "제1관 목적 및 용어의 정의", 
+        "file_path": "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf", 
+        "article_title": "제1관 목적 및 용어의 정의", 
+        "content": "", 
+        "page_number": 45
+    }
+    """
 
-def process_page(company_name: str, category: str, type: str, name: str, date: str, title: str, file_path: str, start_page: int, end_page: int) -> json:
+def process_page(company_name: str, category: str, insurance_name: str, insurance_type: str, sales_date: str, index_title: str, file_path: str, start_page: int, end_page: int) -> json:
     """
     페이지 조문 내용 추출 함수
     """
-    page_info = [company_name, category, type, name, date, title, file_path, start_page, end_page]
+    page_info = [company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, start_page, end_page]
     return json.dumps(get_article_from_page(page_info), ensure_ascii=False)
 
 
@@ -130,7 +145,7 @@ def get_article_from_page(page_info: list[str]) -> list[object]:
     """
     페이지 조문 내용 추출 함수
     """
-    company_name, category, type, name, date, title, file_path, start_page, end_page = page_info
+    company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, start_page, end_page = page_info
     articles = []
     
     # 목차 순회
@@ -169,10 +184,10 @@ def get_article_from_page(page_info: list[str]) -> list[object]:
         articles.append({
             "company_name": company_name,
             "category": category,
-            "type": type,
-            "name": name,
-            "date": date,
-            "title": title,
+            "insurance_name": insurance_name,
+            "insurance_type": insurance_type,
+            "sales_date": sales_date,
+            "index_title": index_title,
             "file_path": file_path,
             "article_title": article_title,
             "content": get_safe_content(content),
@@ -185,13 +200,13 @@ text, pages = read_pdf(file_path)
 page_indexes = process_index(text)
 
 
-page_contents = process_page(company_name, category, type, name, date, title, file_path, start_page, end_page)
+page_contents = process_page(company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, start_page, end_page)
 
 
 # 추출 데이터 저장
-with open(f"{company_name}_{category}_{type}_{name}_{date}_{title}.json", "w+") as f:
+with open(f"{company_name}_{category}_{insurance_name}_{insurance_type}_{sales_date}_{index_title}.json", "w+") as f:
     f.write(page_contents)
 
 
 # 실행 예시
-# python3 extract_insurance_article.py --company_name="농협생명보험" --category="암보험" --type="무배당" --name "369뉴테크NH암보험" --date="2025-01" --title="369뉴테크NH암보험 |무배당|_2404 주계약 약관" --file "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf" --start_page 45 --end_page 103
+# python3 extract_insurance_article.py --company_name="농협생명보험" --category="암보험" --insurance_type="무배당" --insurance_name="369뉴테크NH암보험" --sales_date="2025-01" --index_title="제1관 목적 및 용어의 정의" --file "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf" --start_page 45 --end_page 103
