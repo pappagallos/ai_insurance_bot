@@ -29,11 +29,12 @@ create table embedding_article (
 	sales_date varchar(255),
 	index_title varchar(255),
 	file_path text,
+	chapter_title varchar(255),
 	article_title varchar(255),
 	article_content text,
+    page_number int,
 	embedding vector(3072)
-)
-
+);
 """
 postgres_connection = psycopg2.connect(
     dbname=POSTGRES_DB,
@@ -55,11 +56,12 @@ def get_embedding(content: str, model: str = "gemini-embedding-exp-03-07") -> li
     return result.embeddings[0].values
 
 
-def insert_embedding_article(company_name: str, category: str, insurance_name: str, insurance_type: str, sales_date: str, index_title: str, file_path: str, article_title: str, article_content: str, embedding: list[float]):
+def insert_embedding_article(article: list[str]):
     """
     INSERT 쿼리 함수
     """
-    cursor.execute("INSERT INTO embedding_article (company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, article_title, article_content, embedding) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, article_title, article_content, embedding))
+    company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, chapter_title, article_title, article_content, page_number, embedding = article
+    cursor.execute("INSERT INTO embedding_article (company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, chapter_title, article_title, article_content, page_number, embedding) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, chapter_title, article_title, article_content, page_number, embedding))
     postgres_connection.commit()
 
 
@@ -88,18 +90,21 @@ while True:
         "insurance_name": "369뉴테크NH암보험", 
         "insurance_type": "무배당", 
         "sales_date": "2025-01", 
-        "index_title": "제1관 목적 및 용어의 정의", 
+        "index_title": "저용량-369뉴테크NH암보험(무배당)", 
         "file_path": "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf", 
+        "chapter_title": "제1관 목적 및 용어의 정의",
         "article_title": "제1관 목적 및 용어의 정의", 
-        "content": "", 
+        "article_content": "", 
         "page_number": 45
     }
     """
     try:
-        insert_embedding_article(item["company_name"], item["insurance_name"], item["insurance_type"], item["sales_date"], item["index_title"], item["file_path"], item["article_title"], item["article_content"], get_embedding(item["article_content"]))
+        article = [item["company_name"], item["category"], item["insurance_name"], item["insurance_type"], item["sales_date"], item["index_title"], item["file_path"], item["chapter_title"], item["article_title"], item["article_content"], item["page_number"], get_embedding(item["article_content"])]
+        print(item["company_name"], item["category"], item["insurance_name"], item["insurance_type"], item["sales_date"], item["index_title"], item["file_path"], item["chapter_title"], item["article_title"])
+        insert_embedding_article(article)
         continue_flag = True
     except Exception as e:
         continue_flag = False
-        print("Sleep...")
         sleep(5)
-        print(e)
+        print("Error:", e)
+        print("Sleep 5 seconds...")

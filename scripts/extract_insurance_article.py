@@ -1,7 +1,9 @@
 import re
 import json
 import argparse
+
 from pypdf import PdfReader
+from hanspell import spell_checker
 
 
 parser = argparse.ArgumentParser()
@@ -150,6 +152,7 @@ def get_article_from_page(page_info: list[str]) -> list[object]:
     
     # 목차 순회
     prev_article_number = 0
+    chapter_title = None
     for loop_index, (origin_title, article_title, page_number) in enumerate(page_indexes):
         if int(page_number) < start_page:
             continue
@@ -160,6 +163,7 @@ def get_article_from_page(page_info: list[str]) -> list[object]:
             if current_article_number < prev_article_number:
                 break
             prev_article_number = current_article_number
+            chapter_title = origin_title
             
         # 다음 목차 조문 존재 여부 확인
         exists_next_page = loop_index+1 < len(page_indexes)
@@ -186,19 +190,21 @@ def get_article_from_page(page_info: list[str]) -> list[object]:
             # next_article_title 없는 경우 현재 목차 조문 시작 페이지부터 끝 페이지까지 조문 내용 추출
             content = content[content.find(origin_title):]
 
-        # 추출 데이터 추가
-        articles.append({
-            "company_name": company_name,
-            "category": category,
-            "insurance_name": insurance_name,
-            "insurance_type": insurance_type,
-            "sales_date": sales_date,
-            "index_title": index_title,
-            "file_path": file_path,
-            "article_title": article_title,
-            "content": get_safe_content(content),
-            "page_number": int(page_number)
-        })
+        if content:
+            # 추출 데이터 추가
+            articles.append({
+                "company_name": company_name,
+                "category": category,
+                "insurance_name": insurance_name,
+                "insurance_type": insurance_type,
+                "sales_date": sales_date,
+                "index_title": index_title,
+                "file_path": file_path,
+                "chapter_title": chapter_title,
+                "article_title": article_title,
+                "article_content": get_safe_content(content),
+                "page_number": int(page_number)
+            })
     return articles
 
 
