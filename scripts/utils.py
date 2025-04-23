@@ -36,8 +36,8 @@ def get_cosine_result(query: str, top_n: int = 5) -> list[str]:
     코사인 결과 반환
     """
     embedding = get_embedding(query)
-    cursor.execute("SELECT id, insurance_name, article_title, article_content FROM embedding_article ORDER BY embedding <-> %s::vector LIMIT %s", (embedding, top_n))
-    return [{"id": id, "insurance_name": insurance_name, "article_title": article_title, "article_content": article_content} for [id, insurance_name, article_title, article_content] in cursor.fetchall()]
+    cursor.execute("SELECT company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, chapter_title, article_title, article_content, page_number FROM embedding_article ORDER BY embedding <-> %s::vector LIMIT %s", (embedding, top_n))
+    return [{"보험회사명": company_name, "보험분류": category, "보험상품명": insurance_name, "보험종류": insurance_type, "판매시작년도": sales_date, "목차명": index_title, "다운로드경로": file_path, "약관명": chapter_title, "조문제목": article_title, "조문내용": article_content, "페이지번호": page_number} for [company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, chapter_title, article_title, article_content, page_number] in cursor.fetchall()]
 
 
 def get_rerank_result(query: str, documents: list[str], top_n: int = 3) -> list[str]:
@@ -69,6 +69,7 @@ def get_chat_result(query: str, documents: list[str]) -> list[str]:
     full_text = ""
     for chunk in stream_result:
         chunk_text = chunk.choices[0].delta.content
-        full_text += chunk_text
-        print(chunk_text, end="", flush=True)
+        if chunk_text:  
+            full_text += chunk_text
+            print(chunk_text, end="", flush=True)
     return full_text
