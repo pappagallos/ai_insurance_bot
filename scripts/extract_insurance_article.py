@@ -5,13 +5,24 @@ from pypdf import PdfReader
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--insurance_name", type=str, required=True)
+parser.add_argument("--company_name", type=str, required=True)
+parser.add_argument("--category", type=str, required=True)
+parser.add_argument("--type", type=str, required=True)
+parser.add_argument("--name", type=str, required=True)
+parser.add_argument("--date", type=str, required=True)
+parser.add_argument("--title", type=str, required=True)
 parser.add_argument("--file", type=str, required=True)
 parser.add_argument("--start_page", type=int, required=True)
 parser.add_argument("--end_page", type=int, required=True)
 
 args = parser.parse_args()
-insurance_name = args.insurance_name
+
+company_name = args.company_name
+category = args.category
+type = args.type
+name = args.name
+date = args.date
+title = args.title
 file_path = args.file
 start_page = args.start_page
 end_page = int(args.end_page)+1
@@ -107,18 +118,20 @@ def process_index(text: str) -> list[str]:
     return get_article_from_index(filtered_indexes)
 
 
-def process_page(insurance_name: str, pages: list[str], page_indexes: list[str], end_page: int) -> json:
+def process_page(company_name: str, category: str, type: str, name: str, date: str, title: str, file_path: str, start_page: int, end_page: int) -> json:
     """
     페이지 조문 내용 추출 함수
     """
-    return json.dumps(get_article_from_page(insurance_name, pages, page_indexes, end_page), ensure_ascii=False)
+    page_info = [company_name, category, type, name, date, title, file_path, start_page, end_page]
+    return json.dumps(get_article_from_page(page_info), ensure_ascii=False)
 
 
-def get_article_from_page(insurance_name: str, pages: list[str], page_indexes: list[str], end_page: int) -> list[object]:
+def get_article_from_page(page_info: list[str]) -> list[object]:
     """
     페이지 조문 내용 추출 함수
     """
-    data = []
+    company_name, category, type, name, date, title, file_path, start_page, end_page = page_info
+    articles = []
     
     # 목차 순회
     for loop_index, (origin_title, article_title, page_number) in enumerate(page_indexes):
@@ -131,6 +144,8 @@ def get_article_from_page(insurance_name: str, pages: list[str], page_indexes: l
         exists_next_page = loop_index+1 < len(page_indexes)
         next_start_page_number = int(page_indexes[loop_index+1][2]) if exists_next_page else end_page
         next_article_title = page_indexes[loop_index+1][0] if exists_next_page else None
+
+        print("next_article_title", next_article_title)
         
         # 페이지 조문 내용 추출, 줄바꿈 제거
         content = ""
@@ -151,26 +166,32 @@ def get_article_from_page(insurance_name: str, pages: list[str], page_indexes: l
             content = content[content.find(origin_title):end_page]
 
         # 추출 데이터 추가
-        data.append({
-            "insurance_name": insurance_name,
+        articles.append({
+            "company_name": company_name,
+            "category": category,
+            "type": type,
+            "name": name,
+            "date": date,
+            "title": title,
+            "file_path": file_path,
             "article_title": article_title,
             "content": get_safe_content(content),
             "page_number": int(page_number)
         })
-    return data
+    return articles
 
 
 text, pages = read_pdf(file_path)
 page_indexes = process_index(text)
 
 
-page_contents = process_page(insurance_name, pages, page_indexes, end_page)
+page_contents = process_page(company_name, category, type, name, date, title, file_path, start_page, end_page)
 
 
 # 추출 데이터 저장
-with open(f"{insurance_name}.json", "w+") as f:
+with open(f"{company_name}_{category}_{type}_{name}_{date}_{title}.json", "w+") as f:
     f.write(page_contents)
 
 
 # 실행 예시
-# python3 extract_insurance_article.py --insurance_name "369뉴테크NH암보험 |무배당|_2404 주계약 약관" --file "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf" --start_page 45 --end_page 103
+# python3 extract_insurance_article.py --company_name="농협생명보험" --category="암보험" --type="무배당" --name "369뉴테크NH암보험" --date="2025-01" --title="369뉴테크NH암보험 |무배당|_2404 주계약 약관" --file "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf" --start_page 45 --end_page 103
