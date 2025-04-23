@@ -125,7 +125,7 @@ def process_index(text: str) -> list[str]:
         "insurance_name": "369뉴테크NH암보험", 
         "insurance_type": "무배당", 
         "sales_date": "2025-01", 
-        "index_title": "제1관 목적 및 용어의 정의", 
+        "index_title": "369뉴테크NH암보험 |무배당|_2404 주계약 약관", 
         "file_path": "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf", 
         "article_title": "제1관 목적 및 용어의 정의", 
         "content": "", 
@@ -209,4 +209,4 @@ with open(f"{company_name}_{category}_{insurance_name}_{insurance_type}_{sales_d
 
 
 # 실행 예시
-# python3 extract_insurance_article.py --company_name="농협생명보험" --category="암보험" --insurance_type="무배당" --insurance_name="369뉴테크NH암보험" --sales_date="2025-01" --index_title="제1관 목적 및 용어의 정의" --file "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf" --start_page 45 --end_page 103
+# python3 extract_insurance_article.py --company_name="농협생명보험" --category="암보험" --insurance_type="무배당" --insurance_name="369뉴테크NH암보험" --sales_date="2025-01" --index_title="369뉴테크NH암보험 |무배당|_2404 주계약 약관" --file "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf" --start_page 45 --end_page 103
