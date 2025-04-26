@@ -2,6 +2,8 @@ import cohere
 import psycopg2
 from openai import OpenAI
 from google import genai
+from bs4 import BeautifulSoup
+import re
 
 from config import GEMINI_API_KEY, OPENAI_API_KEY, COHERE_API_KEY, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST
 
@@ -57,14 +59,28 @@ def get_chat_result(query: str, documents: list[str]) -> list[str]:
     """
     챗 결과 반환
     """
+    system_prompt = \
+    """
+    ### 목표
+    당신은 생명보험 영업 전문가입니다. 사용자의 질문에 대해 보험 약관을 참고하여 답변하세요.
+
+    ### 조건
+    1. 제공된 Documents를 참고하여 답변하세요.
+    2. 답변은 최대한 친절하고 상세하고 명확하게 하세요. 그리고 가독성을 신경써서 구조화하여 한국어로 답변하세요.
+    3. 어느 조문을 인용해서 답변했는지 반드시 표기하세요. 표기할 때는 insurance_name, article_title, page_number를 답변에 포함하여 제공하세요.
+    4. Documents에 없는 내용이어서 모른다고 하는 답변은 사용자에게 관심없는 내용입니다. 사용자가 궁금해하지 않는 내용은 답변에 포함시키지 말고 질문에 사실로만 답변하세요.
+    5. Query 질문에 답변 가능한 Documents가 없을 경우 모른다고 하세요.
+    """
     stream_result = openai_client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4.1-mini",
         messages=[
-            {"role": "system", "content": "You are a helpful insurance expert. answer user's queries in Korean."},
-            {"role": "assistant", "content": "Here are the documents: " + "\n".join(documents)},
-            {"role": "user", "content": query},
+            {"role": "system", "content": system_prompt},
+            {"role": "assistant", "content": "### Documents: " + "\n".join(documents)},
+            {"role": "user", "content": "### Query: " + query},
         ],
         stream=True,
+        top_p=0.9,
+        # temperature=0.1,
     )
     full_text = ""
     for chunk in stream_result:
