@@ -119,28 +119,12 @@ def process_index(text: str) -> list[str]:
     filtered_indexes = filter_index(indexes)
     return get_article_from_index(filtered_indexes)
 
-"""
-    [json 예시]
-    {
-        "company_name": "농협생명보험", 
-        "category": "암보험", 
-        "insurance_name": "369뉴테크NH암보험", 
-        "insurance_type": "무배당", 
-        "sales_date": "2025-01", 
-        "index_title": "369뉴테크NH암보험 |무배당|_2404 주계약 약관", 
-        "file_path": "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf", 
-        "article_title": "제1관 목적 및 용어의 정의", 
-        "content": "", 
-        "page_number": 45
-    }
-    """
 
-def process_page(company_name: str, category: str, insurance_name: str, insurance_type: str, sales_date: str, index_title: str, file_path: str, start_page: int, end_page: int) -> json:
+def process_page(page_params: list[str]) -> json:
     """
     페이지 조문 내용 추출 함수
     """
-    page_info = [company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, start_page, end_page]
-    return json.dumps(get_article_from_page(page_info), ensure_ascii=False)
+    return json.dumps(get_article_from_page(page_params), ensure_ascii=False)
 
 
 def get_article_from_page(page_info: list[str]) -> list[object]:
@@ -211,10 +195,25 @@ def get_article_from_page(page_info: list[str]) -> list[object]:
 text, pages = read_pdf(file_path)
 page_indexes = process_index(text)
 
+page_params = [company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, start_page, end_page]
+page_contents = process_page(page_params)
 
-page_contents = process_page(company_name, category, insurance_name, insurance_type, sales_date, index_title, file_path, start_page, end_page)
 
-
+"""
+[json 예시]
+{
+    "company_name": "농협생명보험", 
+    "category": "암보험", 
+    "insurance_name": "369뉴테크NH암보험", 
+    "insurance_type": "무배당", 
+    "sales_date": "2025-01", 
+    "index_title": "369뉴테크NH암보험 |무배당|_2404 주계약 약관", 
+    "file_path": "/Users/woojinlee/Desktop/ai_insurance_bot/김백현_농협생명보험_흥국생명보험_KB라이프생명보험/농협생명보험/369뉴테크NH암보험(무배당)/저용량-369뉴테크NH암보험(무배당)_2404_최종_241220.pdf", 
+    "article_title": "제1관 목적 및 용어의 정의", 
+    "content": "", 
+    "page_number": 45
+}
+"""
 # 추출 데이터 저장
 with open(f"{company_name}_{category}_{insurance_name}_{insurance_type}_{sales_date}_{index_title}.json", "w+") as f:
     f.write(page_contents)
