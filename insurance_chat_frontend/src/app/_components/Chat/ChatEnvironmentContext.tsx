@@ -15,8 +15,8 @@ export interface ChatEnvironmentProviderProps extends InitChatEnvironmentContext
 
 export const ChatEnvironmentContext = createContext<ChatEnvironmentContextType | null>(null);
 
-export function ChatEnvironmentProvider({ messageEditorPlaceholder, children }: ChatEnvironmentProviderProps) {
-    const [disabledSendButton, setDisabledSendButton] = useState<boolean>(false);
+export function ChatEnvironmentProvider({ messageEditorPlaceholder, disabledSendButton: initDisabledSendButton, children }: ChatEnvironmentProviderProps) {
+    const [disabledSendButton, setDisabledSendButton] = useState<boolean>(initDisabledSendButton);
 
     const value = useMemo(() => {
         return {
