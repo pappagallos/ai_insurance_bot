@@ -3,12 +3,13 @@
 import React from 'react';
 
 import { ChatMessageEditor } from '../ChatMessageEditor/ChatMessageEditor';
-import { ChatEnvironmentProvider, ChatEnvironmentContextType } from './ChatEnvironmentContext';
+import { ChatEnvironmentProvider, InitChatEnvironmentContextType } from './ChatEnvironmentContext';
 
 import styles from './Chat.module.scss';
 
-const initChatEnvironmentContext: ChatEnvironmentContextType = {
+const initChatEnvironmentContext: InitChatEnvironmentContextType = {
     messageEditorPlaceholder: '농협생명보험 AI에게 무엇이든 질문해 주세요.',
+    disabledSendButton: false,
 }
 
 interface ChatFooterProps {

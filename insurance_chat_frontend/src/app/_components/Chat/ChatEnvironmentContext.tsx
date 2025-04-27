@@ -1,22 +1,30 @@
-import { createContext, useMemo } from "react";
+import { createContext, useMemo, useState } from "react";
 
-export interface ChatEnvironmentContextType {
+export interface InitChatEnvironmentContextType {
     messageEditorPlaceholder: string;
+    disabledSendButton: boolean;
 }
 
-export interface ChatEnvironmentProviderProps {
-    messageEditorPlaceholder: string;
+export interface ChatEnvironmentContextType extends InitChatEnvironmentContextType {
+    setDisabledSendButton: (disabled: boolean) => void;
+}
+
+export interface ChatEnvironmentProviderProps extends InitChatEnvironmentContextType {
     children: React.ReactNode;
 }
 
 export const ChatEnvironmentContext = createContext<ChatEnvironmentContextType | null>(null);
 
 export function ChatEnvironmentProvider({ messageEditorPlaceholder, children }: ChatEnvironmentProviderProps) {
+    const [disabledSendButton, setDisabledSendButton] = useState<boolean>(false);
+
     const value = useMemo(() => {
         return {
             messageEditorPlaceholder,
+            disabledSendButton,
+            setDisabledSendButton,
         }
-    }, [messageEditorPlaceholder]);
+    }, [messageEditorPlaceholder, disabledSendButton]);
 
     return (
         <ChatEnvironmentContext.Provider value={value}>
