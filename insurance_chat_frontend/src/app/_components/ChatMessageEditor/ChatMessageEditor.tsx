@@ -2,8 +2,7 @@ import cn from 'classnames';
 
 import React, { useState, useContext, useRef } from 'react';
 
-import { ChatEnvironmentContext } from '../Chat/ChatEnvironmentContext';
-import { ChatEnvironmentContextType } from '../Chat/ChatEnvironmentContext';
+import { ChatEnvironmentContext, ChatEnvironmentContextType } from '../Chat/ChatEnvironmentContext';
 
 import SendIcon from '@mui/icons-material/Send';
 
