@@ -1,7 +1,7 @@
-import React from "react";
+import React from 'react';
 
 // Components
-import Chat from "./_components/Chat/Chat";
+import Chat from './_components/Chat/Chat';
 
 export default function App() {
   return (

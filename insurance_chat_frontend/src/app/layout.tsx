@@ -1,20 +1,20 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 
-import "./global.scss";
+import './global.scss';
 
 // Fonts
-import localFont from "next/font/local";
+import localFont from 'next/font/local';
 const pretendard = localFont({
-  src: "./fonts/PretendardVariable.woff2",
-  display: "swap",
-  weight: "45 920",
-  variable: "--font-pretendard",
+  src: './fonts/PretendardVariable.woff2',
+  display: 'swap',
+  weight: '45 920',
+  variable: '--font-pretendard',
 });
 
 // Metadata
 export const metadata: Metadata = {
-  title: "Insurance Chat",
-  description: "Insurance Chat",
+  title: 'Insurance Chat',
+  description: 'Insurance Chat',
 };
 
 // Root Layout
@@ -25,9 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="kr">
-      <body className={`${pretendard.variable}`}>
-        {children}
-      </body>
+      <body className={`${pretendard.variable}`}>{children}</body>
     </html>
   );
 }

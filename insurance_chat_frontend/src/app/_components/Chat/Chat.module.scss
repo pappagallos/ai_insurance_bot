@@ -1,22 +1,22 @@
 .chat {
-    position: fixed;
-    right: 30px;
-    bottom: 30px;
-    display: flex;
-    flex-direction: column;
-    width: 400px;
-    height: 700px;
-    border-radius: 30px;
-    background: #fff;
-    overflow: hidden;
-    border: 1px solid #eee;
-    box-shadow: 0 5px 60px rgba(0, 0, 0, 0.2);
+  position: fixed;
+  right: 30px;
+  bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  height: 700px;
+  border-radius: 30px;
+  background: #fff;
+  overflow: hidden;
+  border: 1px solid #eee;
+  box-shadow: 0 5px 60px rgba(0, 0, 0, 0.2);
 }
 
 .footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: auto;
-    background: #fff;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: auto;
+  background: #fff;
 }
