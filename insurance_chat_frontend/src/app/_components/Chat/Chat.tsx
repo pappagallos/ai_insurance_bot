@@ -8,7 +8,7 @@ import { ChatEnvironmentProvider, ChatEnvironmentContextType } from './ChatEnvir
 import styles from './Chat.module.scss';
 
 const initChatEnvironmentContext: ChatEnvironmentContextType = {
-    messageEditorPlaceholder: '궁금하신 내용을 입력하세요.',
+    messageEditorPlaceholder: '농협생명보험 AI에게 무엇이든 질문해 주세요.',
 }
 
 interface ChatFooterProps {
