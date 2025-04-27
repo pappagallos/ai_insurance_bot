@@ -1,7 +1,7 @@
 .chat {
     position: fixed;
-    right: 15px;
-    bottom: 15px;
+    right: 30px;
+    bottom: 30px;
     display: flex;
     flex-direction: column;
     width: 400px;
@@ -9,7 +9,8 @@
     border-radius: 30px;
     background: #fff;
     overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    border: 1px solid #eee;
+    box-shadow: 0 5px 60px rgba(0, 0, 0, 0.2);
 }
 
 .footer {
