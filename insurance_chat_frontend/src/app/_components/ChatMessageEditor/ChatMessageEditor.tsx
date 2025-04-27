@@ -64,14 +64,14 @@ export const ChatMessageEditor = () => {
     ChatEnvironmentContext,
   );
 
-  function onChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+  function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
     chatEnvironmentContext?.setDisabledSendButton(!event.target.value.trim());
   }
 
   return (
     <div className={styles.message_editor}>
       <AutoResizeTextarea
-        onChange={onChange}
+        onChange={handleChange}
         placeholder={chatEnvironmentContext?.messageEditorPlaceholder}
       />
       <ChatSendButton disabled={chatEnvironmentContext?.disabledSendButton ?? false} />

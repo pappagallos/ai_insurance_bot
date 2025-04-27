@@ -1,7 +1,15 @@
 import { createContext, useMemo, useState } from 'react';
 
 export interface InitChatEnvironmentContextType {
+  appName: string;
+  appDescription: string;
+  appIcon: string;
+  appMainImage: string;
+  appBackground: string;
   messageEditorPlaceholder: string;
+  botName: string;
+  botAvatar: string;
+  botWelcomeMessage: string;
   disabledSendButton: boolean;
 }
 
@@ -16,7 +24,15 @@ export interface ChatEnvironmentProviderProps extends InitChatEnvironmentContext
 export const ChatEnvironmentContext = createContext<ChatEnvironmentContextType | null>(null);
 
 export function ChatEnvironmentProvider({
+  appName,
+  appDescription,
+  appIcon,
+  appMainImage,
+  appBackground,
   messageEditorPlaceholder,
+  botName,
+  botAvatar,
+  botWelcomeMessage,
   disabledSendButton: initDisabledSendButton,
   children,
 }: ChatEnvironmentProviderProps) {
@@ -24,11 +40,30 @@ export function ChatEnvironmentProvider({
 
   const value = useMemo(() => {
     return {
+      appName,
+      appDescription,
+      appIcon,
+      appMainImage,
+      appBackground,
       messageEditorPlaceholder,
+      botName,
+      botAvatar,
+      botWelcomeMessage,
       disabledSendButton,
       setDisabledSendButton,
     };
-  }, [messageEditorPlaceholder, disabledSendButton]);
+  }, [
+    appName,
+    appDescription,
+    appIcon,
+    appMainImage,
+    appBackground,
+    messageEditorPlaceholder,
+    botName,
+    botAvatar,
+    botWelcomeMessage,
+    disabledSendButton,
+  ]);
 
   return (
     <ChatEnvironmentContext.Provider value={value}>{children}</ChatEnvironmentContext.Provider>
