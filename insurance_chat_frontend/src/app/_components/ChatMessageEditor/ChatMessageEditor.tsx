@@ -66,7 +66,7 @@ export const AutoResizeTextarea = ({
       autoComplete={'off'}
       value={value}
       placeholder={placeholder ?? '질문을 입력해 주세요.'}
-      onChangeCapture={handleChange}
+      onChange={handleChange}
       onKeyUp={handleKeyUp}
       ref={textareaRef}
     />
