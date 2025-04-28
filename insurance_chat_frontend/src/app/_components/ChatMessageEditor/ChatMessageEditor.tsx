@@ -3,7 +3,6 @@ import cn from 'classnames';
 import React, { useState, useContext, useRef } from 'react';
 
 import { ChatEnvironmentContext, ChatEnvironmentContextType } from '../Chat/ChatEnvironmentContext';
-
 import SendIcon from '@mui/icons-material/Send';
 
 import styles from './ChatMessageEditor.module.scss';
