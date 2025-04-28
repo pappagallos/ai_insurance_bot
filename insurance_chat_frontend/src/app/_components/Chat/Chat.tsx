@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import { ChatMessageEditor } from '../ChatMessageEditor/ChatMessageEditor';
 import { ChatEnvironmentProvider, InitChatEnvironmentContextType } from './ChatEnvironmentContext';
@@ -81,7 +81,14 @@ const UserMessage = ({ htmlMessage, textMessage }: MessageProps) => {
   );
 };
 
+interface ChatHistory {
+  rule: 'user' | 'bot';
+  message: string;
+}
+
 export const Chat = () => {
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+
   return (
     <ChatEnvironmentProvider {...initChatEnvironmentContext}>
       <div className={styles.chat}>
@@ -113,13 +120,15 @@ export const Chat = () => {
           <div className={styles.chat_history}>
             <ChatTime date={new Date()} />
             <BotMessage htmlMessage={initChatEnvironmentContext.botWelcomeMessage} />
-            <UserMessage textMessage={'안녕하세요.'} />
+            {chatHistory.map((chat, index) => {
+              return <UserMessage textMessage={chat.message} key={index} />;
+            })}
           </div>
         </Chat.Body>
         <Chat.Footer>
           <ChatMessageEditor
             onSend={message => {
-              console.log(message);
+              setChatHistory([...chatHistory, { rule: 'user', message }]);
             }}
           />
         </Chat.Footer>
