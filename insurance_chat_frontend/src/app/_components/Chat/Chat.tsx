@@ -117,7 +117,11 @@ export const Chat = () => {
           </div>
         </Chat.Body>
         <Chat.Footer>
-          <ChatMessageEditor />
+          <ChatMessageEditor
+            onSend={message => {
+              console.log(message);
+            }}
+          />
         </Chat.Footer>
       </div>
     </ChatEnvironmentProvider>
