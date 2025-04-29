@@ -103,8 +103,8 @@ export const ChatMessageEditor = ({ onSend }: ChatMessageEditorProps) => {
     <div className={styles.message_editor}>
       <AutoResizeTextarea
         value={message}
-        onChange={handleChange}
         onEnter={handleClick}
+        onChange={handleChange}
         placeholder={chatEnvironmentContext?.messageEditorPlaceholder}
       />
       <ChatSendButton

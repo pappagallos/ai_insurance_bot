@@ -55,9 +55,9 @@ const BotMessage = ({ htmlMessage, textMessage }: MessageProps) => {
       </div>
       <div className={styles.bot_message}>
         <div className={styles.name}>{initChatEnvironmentContext.botName}</div>
-        {textMessage && <div className={styles.message}>{textMessage}</div>}
+        {textMessage && <span className={styles.message}>{textMessage}</span>}
         {htmlMessage && (
-          <div
+          <span
             className={styles.message}
             dangerouslySetInnerHTML={{ __html: htmlMessage as TrustedHTML }}
           />
@@ -70,9 +70,9 @@ const BotMessage = ({ htmlMessage, textMessage }: MessageProps) => {
 const UserMessage = ({ htmlMessage, textMessage }: MessageProps) => {
   return (
     <div className={styles.user}>
-      {textMessage && <div className={styles.message}>{textMessage}</div>}
+      {textMessage && <span className={styles.message}>{textMessage}</span>}
       {htmlMessage && (
-        <div
+        <span
           className={styles.message}
           dangerouslySetInnerHTML={{ __html: htmlMessage as TrustedHTML }}
         />
@@ -83,7 +83,7 @@ const UserMessage = ({ htmlMessage, textMessage }: MessageProps) => {
 
 interface ChatHistory {
   rule: 'user' | 'bot';
-  message: string;
+  message: string | React.JSX.Element;
 }
 
 export const Chat = () => {
@@ -121,7 +121,10 @@ export const Chat = () => {
             <ChatTime date={new Date()} />
             <BotMessage htmlMessage={initChatEnvironmentContext.botWelcomeMessage} />
             {chatHistory.map((chat, index) => {
-              return <UserMessage textMessage={chat.message} key={index} />;
+              const MessageComponent = chat.rule === 'user' ? UserMessage : BotMessage;
+              if (chat.message instanceof HTMLElement)
+                return <MessageComponent htmlMessage={chat.message as TrustedHTML} key={index} />;
+              return <MessageComponent textMessage={chat.message as string} key={index} />;
             })}
           </div>
         </Chat.Body>
@@ -129,6 +132,16 @@ export const Chat = () => {
           <ChatMessageEditor
             onSend={message => {
               setChatHistory([...chatHistory, { rule: 'user', message }]);
+              const timeout = setTimeout(() => {
+                setChatHistory(prevChatHistory => [
+                  ...prevChatHistory,
+                  {
+                    rule: 'bot',
+                    message: <img src="/assets/bot_loading.svg" alt="bot_loading" />,
+                  },
+                ]);
+                clearTimeout(timeout);
+              }, 1000);
             }}
           />
         </Chat.Footer>
