@@ -37,5 +37,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/**/.config.py
-/**/uwsgi.log
+config.py
+uwsgi.log
+__pycache__
