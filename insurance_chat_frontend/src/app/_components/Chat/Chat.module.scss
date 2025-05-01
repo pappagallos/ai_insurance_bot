@@ -129,7 +129,6 @@
     .bot_message {
       width: 85%;
       color: #9d9d9d;
-      font-size: 1.2rem;
       margin: 0;
 
       .name {
@@ -137,10 +136,12 @@
         margin: 0 0 4px 10px;
       }
 
-      .message {
+      .loading {
         display: inline-flex;
+      }
+
+      .message {
         max-width: 90%;
-        font-size: 1.5rem;
         line-height: 1.4;
         color: #313131;
         background: #f2f2f2;
@@ -149,6 +150,10 @@
         border-radius: 18px;
         box-sizing: border-box;
         white-space: pre-wrap;
+
+        p {
+          font-size: 1.4rem;
+        }
       }
     }
   }
@@ -160,7 +165,7 @@
 
     .message {
       max-width: 90%;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       line-height: 1.4;
       color: #fff;
       background: #2362d0;
