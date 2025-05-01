@@ -1,5 +1,7 @@
 'use client';
 
+import cn from 'classnames';
+import { marked } from 'marked';
 import React, { forwardRef, useRef, useState } from 'react';
 
 import { ChatMessageEditor } from '../ChatMessageEditor/ChatMessageEditor';
@@ -27,8 +29,9 @@ interface ChatCompositionProps {
 }
 
 interface MessageProps {
-  htmlMessage?: TrustedHTML;
   textMessage?: string;
+  htmlMessage?: TrustedHTML;
+  isLoading?: boolean;
 }
 
 interface ChatTimeProps {
@@ -43,7 +46,7 @@ const ChatTime = ({ date }: ChatTimeProps) => {
   );
 };
 
-const BotMessage = ({ htmlMessage, textMessage }: MessageProps) => {
+const BotMessage = ({ textMessage, htmlMessage, isLoading }: MessageProps) => {
   return (
     <div className={styles.bot}>
       <div className={styles.bot_avatar}>
@@ -55,9 +58,23 @@ const BotMessage = ({ htmlMessage, textMessage }: MessageProps) => {
       </div>
       <div className={styles.bot_message}>
         <div className={styles.name}>{initChatEnvironmentContext.botName}</div>
-        {textMessage && <span className={styles.message}>{textMessage}</span>}
-        {htmlMessage && (
-          <span className={styles.message} dangerouslySetInnerHTML={{ __html: htmlMessage }} />
+        {isLoading && (
+          <div className={cn(styles.message, styles.loading)}>
+            <img src="/assets/bot_loading.svg" alt="bot_loading" />
+          </div>
+        )}
+        {!isLoading && (
+          <>
+            {textMessage && <span className={styles.message}>{textMessage}</span>}
+            {htmlMessage && (
+              <div
+                className={styles.message}
+                dangerouslySetInnerHTML={{
+                  __html: marked.parse(htmlMessage as string, { pedantic: true }),
+                }}
+              />
+            )}
+          </>
         )}
       </div>
     </div>
@@ -82,6 +99,8 @@ interface ChatHistory {
   id: string;
   rule: 'user' | 'bot';
   message: string | React.JSX.Element;
+  isLoading?: boolean;
+  isMarkdown?: boolean;
 }
 
 export const Chat = () => {
@@ -107,9 +126,11 @@ export const Chat = () => {
       setChatHistory(prev => [
         ...prev,
         {
-          rule: 'bot',
-          message: <img src="/assets/bot_loading.svg" alt="bot_loading" />,
           id: tempId,
+          rule: 'bot',
+          message: '',
+          isLoading: true,
+          isMarkdown: true,
         },
       ]);
       scrollToBottom();
@@ -144,8 +165,7 @@ export const Chat = () => {
             if (eventData) {
               try {
                 const jsonData = JSON.parse(eventData);
-                console.log(jsonData);
-                const content = jsonData.chat;
+                const content = jsonData.message;
                 accumulatedText += content;
               } catch {
                 console.error('Error parsing JSON:', eventData);
@@ -155,7 +175,9 @@ export const Chat = () => {
         }
 
         setChatHistory(prev =>
-          prev.map(item => (item.id === tempId ? { ...item, message: accumulatedText } : item)),
+          prev.map(item =>
+            item.id === tempId ? { ...item, message: accumulatedText, isLoading: false } : item,
+          ),
         );
         scrollToBottom();
       }
@@ -198,10 +220,16 @@ export const Chat = () => {
             <ChatTime date={new Date()} />
             <BotMessage htmlMessage={initChatEnvironmentContext.botWelcomeMessage} />
             {chatHistory.map((chat, index) => {
-              const MessageComponent = chat.rule === 'user' ? UserMessage : BotMessage;
-              if (chat.message instanceof HTMLElement)
-                return <MessageComponent htmlMessage={chat.message as TrustedHTML} key={index} />;
-              return <MessageComponent textMessage={chat.message as string} key={index} />;
+              if (chat.rule === 'user')
+                return <UserMessage textMessage={chat.message as string} key={index} />;
+              else
+                return (
+                  <BotMessage
+                    htmlMessage={chat.message as TrustedHTML}
+                    isLoading={chat.isLoading}
+                    key={index}
+                  />
+                );
             })}
           </div>
         </Chat.Body>
@@ -210,7 +238,13 @@ export const Chat = () => {
             onSend={message => {
               setChatHistory([
                 ...chatHistory,
-                { rule: 'user', message, id: Date.now().toString() },
+                {
+                  rule: 'user',
+                  message,
+                  id: Date.now().toString(),
+                  isLoading: false,
+                  isMarkdown: false,
+                },
               ]);
               const timeout = setTimeout(() => {
                 streamChat(message);
