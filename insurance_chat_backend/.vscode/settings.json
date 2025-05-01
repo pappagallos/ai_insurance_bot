@@ -1,0 +1,8 @@
+{
+  "workbench.colorTheme": "Night Owl",
+  "workbench.iconTheme": "material-icon-theme",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "html.format.enable": false,
+  "javascript.updateImportsOnFileMove.enabled": "always"
+}
