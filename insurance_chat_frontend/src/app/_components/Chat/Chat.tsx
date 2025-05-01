@@ -57,10 +57,7 @@ const BotMessage = ({ htmlMessage, textMessage }: MessageProps) => {
         <div className={styles.name}>{initChatEnvironmentContext.botName}</div>
         {textMessage && <span className={styles.message}>{textMessage}</span>}
         {htmlMessage && (
-          <span
-            className={styles.message}
-            dangerouslySetInnerHTML={{ __html: htmlMessage as TrustedHTML }}
-          />
+          <span className={styles.message} dangerouslySetInnerHTML={{ __html: htmlMessage }} />
         )}
       </div>
     </div>
@@ -82,6 +79,7 @@ const UserMessage = ({ htmlMessage, textMessage }: MessageProps) => {
 };
 
 interface ChatHistory {
+  id: string;
   rule: 'user' | 'bot';
   message: string | React.JSX.Element;
 }
@@ -89,6 +87,7 @@ interface ChatHistory {
 export const Chat = () => {
   const chatHistoryRef = useRef<HTMLDivElement>(null);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   function scrollToBottom() {
     const timeout = setTimeout(() => {
@@ -98,6 +97,73 @@ export const Chat = () => {
       });
       clearTimeout(timeout);
     }, 300);
+  }
+
+  async function streamChat(query: string) {
+    setIsLoading(true);
+
+    try {
+      const tempId = Date.now().toString();
+      setChatHistory(prev => [
+        ...prev,
+        {
+          rule: 'bot',
+          message: <img src="/assets/bot_loading.svg" alt="bot_loading" />,
+          id: tempId,
+        },
+      ]);
+      scrollToBottom();
+
+      const response = await fetch('/apis/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/event-stream',
+        },
+        body: JSON.stringify({ query }),
+      });
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No reader available');
+
+      let accumulatedText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          break;
+        }
+
+        const chunk = new TextDecoder().decode(value);
+
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data:')) {
+            const eventData = line.slice(5).trim();
+            if (eventData) {
+              try {
+                const jsonData = JSON.parse(eventData);
+                console.log(jsonData);
+                const content = jsonData.chat;
+                accumulatedText += content;
+              } catch {
+                console.error('Error parsing JSON:', eventData);
+              }
+            }
+          }
+        }
+
+        setChatHistory(prev =>
+          prev.map(item => (item.id === tempId ? { ...item, message: accumulatedText } : item)),
+        );
+        scrollToBottom();
+      }
+    } catch (error) {
+      console.error('Error streaming chat:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -142,20 +208,18 @@ export const Chat = () => {
         <Chat.Footer>
           <ChatMessageEditor
             onSend={message => {
-              setChatHistory([...chatHistory, { rule: 'user', message }]);
+              setChatHistory([
+                ...chatHistory,
+                { rule: 'user', message, id: Date.now().toString() },
+              ]);
               const timeout = setTimeout(() => {
-                setChatHistory(prevChatHistory => [
-                  ...prevChatHistory,
-                  {
-                    rule: 'bot',
-                    message: <img src="/assets/bot_loading.svg" alt="bot_loading" />,
-                  },
-                ]);
+                streamChat(message);
                 clearTimeout(timeout);
                 scrollToBottom();
               }, 1000);
               scrollToBottom();
             }}
+            disabled={isLoading}
           />
         </Chat.Footer>
       </div>

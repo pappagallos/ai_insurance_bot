@@ -75,9 +75,10 @@ export const AutoResizeTextarea = ({
 
 interface ChatMessageEditorProps {
   onSend: (message: string) => void;
+  disabled: boolean;
 }
 
-export const ChatMessageEditor = ({ onSend }: ChatMessageEditorProps) => {
+export const ChatMessageEditor = ({ onSend, disabled }: ChatMessageEditorProps) => {
   const [message, setMessage] = useState<string>('');
 
   const chatEnvironmentContext = useContext<ChatEnvironmentContextType | null>(
@@ -90,7 +91,7 @@ export const ChatMessageEditor = ({ onSend }: ChatMessageEditorProps) => {
   }
 
   function handleClick() {
-    // TODO: 메세지 전송 로직, 서버로부터 LLM Stream 받는 로직 추가
+    if (disabled) return;
     onSend(message);
     clearMessage();
   }
@@ -109,7 +110,7 @@ export const ChatMessageEditor = ({ onSend }: ChatMessageEditorProps) => {
       />
       <ChatSendButton
         onClick={handleClick}
-        disabled={chatEnvironmentContext?.disabledSendButton ?? false}
+        disabled={disabled || (chatEnvironmentContext?.disabledSendButton ?? false)}
       />
     </div>
   );
