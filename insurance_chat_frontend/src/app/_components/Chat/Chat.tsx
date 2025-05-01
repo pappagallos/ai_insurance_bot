@@ -2,6 +2,10 @@
 
 import cn from 'classnames';
 import { marked } from 'marked';
+import markedExtendedTables from '@fsegurai/marked-extended-tables';
+
+marked.use(markedExtendedTables());
+
 import React, { forwardRef, useRef, useState } from 'react';
 
 import { ChatMessageEditor } from '../ChatMessageEditor/ChatMessageEditor';
@@ -70,7 +74,10 @@ const BotMessage = ({ textMessage, htmlMessage, isLoading }: MessageProps) => {
               <div
                 className={styles.message}
                 dangerouslySetInnerHTML={{
-                  __html: marked.parse(htmlMessage as string, { pedantic: true }),
+                  __html: marked.parse(htmlMessage as string, {
+                    pedantic: true,
+                    gfm: true,
+                  }),
                 }}
               />
             )}

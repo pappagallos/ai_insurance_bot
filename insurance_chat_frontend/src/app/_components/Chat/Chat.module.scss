@@ -4,7 +4,7 @@
   bottom: 30px;
   display: flex;
   flex-direction: column;
-  width: 400px;
+  width: 500px;
   height: 700px;
   border-radius: 30px;
   background: #fff;
@@ -111,7 +111,7 @@
   .bot {
     display: flex;
     align-items: flex-end;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 
     .bot_avatar {
       width: 40px;
@@ -137,19 +137,19 @@
       }
 
       .loading {
-        display: inline-flex;
+        padding: 8px 12px 4px 12px !important;
       }
 
       .message {
+        display: inline-block;
         max-width: 90%;
         line-height: 1.4;
         color: #313131;
         background: #f2f2f2;
         margin: 0;
-        padding: 10px 12px;
+        padding: 0 12px;
         border-radius: 18px;
         box-sizing: border-box;
-        white-space: pre-wrap;
 
         p {
           font-size: 1.4rem;
@@ -162,6 +162,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: flex-end;
+    margin-bottom: 15px;
 
     .message {
       max-width: 90%;

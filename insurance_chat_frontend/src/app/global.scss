@@ -4,8 +4,48 @@
 }
 
 p,
-span {
-  margin: 0;
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+a,
+ul,
+ol,
+li,
+strong,
+em {
+  font-size: 1.4rem;
+}
+
+em {
+  color: #999999;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+th,
+td {
+  padding: 1rem;
+  border: 1px solid #a5a5a5;
+  font-size: 1.4rem;
+  word-break: keep-all;
+}
+
+tr:last-child {
+  td {
+    border-bottom: 0;
+  }
+}
+
+th {
+  background-color: #ccc;
+  color: #313131;
 }
 
 body {
