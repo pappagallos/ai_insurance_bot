@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { forwardRef, useRef, useState } from 'react';
 
 import { ChatMessageEditor } from '../ChatMessageEditor/ChatMessageEditor';
 import { ChatEnvironmentProvider, InitChatEnvironmentContextType } from './ChatEnvironmentContext';
@@ -87,7 +87,18 @@ interface ChatHistory {
 }
 
 export const Chat = () => {
+  const chatHistoryRef = useRef<HTMLDivElement>(null);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+
+  function scrollToBottom() {
+    const timeout = setTimeout(() => {
+      chatHistoryRef.current?.scrollTo({
+        top: chatHistoryRef.current?.scrollHeight,
+        behavior: 'smooth',
+      });
+      clearTimeout(timeout);
+    }, 300);
+  }
 
   return (
     <ChatEnvironmentProvider {...initChatEnvironmentContext}>
@@ -108,7 +119,7 @@ export const Chat = () => {
             </div>
           </div>
         </Chat.Header>
-        <Chat.Body>
+        <Chat.Body ref={chatHistoryRef}>
           <div className={styles.chat_information}>
             <img
               src={initChatEnvironmentContext.appMainImage}
@@ -141,7 +152,9 @@ export const Chat = () => {
                   },
                 ]);
                 clearTimeout(timeout);
+                scrollToBottom();
               }, 1000);
+              scrollToBottom();
             }}
           />
         </Chat.Footer>
@@ -154,9 +167,13 @@ Chat.Header = ({ children }: ChatCompositionProps) => {
   return <div className={styles.header}>{children}</div>;
 };
 
-Chat.Body = ({ children }: ChatCompositionProps) => {
-  return <div className={styles.body}>{children}</div>;
-};
+Chat.Body = forwardRef<HTMLDivElement, ChatCompositionProps>(({ children }, ref) => {
+  return (
+    <div className={styles.body} ref={ref}>
+      {children}
+    </div>
+  );
+});
 
 Chat.Footer = ({ children }: ChatCompositionProps) => {
   return <div className={styles.footer}>{children}</div>;
