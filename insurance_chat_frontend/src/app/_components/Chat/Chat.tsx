@@ -4,7 +4,7 @@ import markedExtendedTables from '@fsegurai/marked-extended-tables';
 
 marked.use(markedExtendedTables());
 
-import React, { forwardRef, useContext, useRef, useState } from 'react';
+import React, { forwardRef, useContext, useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 
 import { ChatMessageEditor } from '../ChatMessageEditor/ChatMessageEditor';
@@ -107,6 +107,11 @@ export const Chat = ({ chatTrigger }: ChatProps) => {
   const chatHistoryRef = useRef<HTMLDivElement>(null);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [wasVisible, setWasVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (chatEnvironmentContext?.isOpen) setWasVisible(true);
+  }, [chatEnvironmentContext?.isOpen]);
 
   function scrollToBottom() {
     const timeout = setTimeout(() => {
@@ -192,6 +197,7 @@ export const Chat = ({ chatTrigger }: ChatProps) => {
       <div
         className={cn(styles.chat, {
           [styles.visible]: chatEnvironmentContext?.isOpen,
+          [styles.was_visible]: wasVisible && !chatEnvironmentContext?.isOpen,
         })}
       >
         <Chat.Header>

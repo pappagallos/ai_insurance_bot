@@ -12,11 +12,17 @@
   overflow: hidden;
   border: 1px solid #eee;
   box-shadow: 0 5px 60px rgba(0, 0, 0, 0.2);
-  animation: fadeOut 0.2s ease-in-out forwards;
   visibility: hidden;
+  opacity: 0;
+  transform: translateY(-60px);
+  transition: visibility 0s 0.2s;
 
   &.visible {
     animation: fadeIn 0.2s ease-in-out forwards;
+  }
+
+  &.was_visible {
+    animation: fadeOut 0.2s ease-in-out forwards;
   }
 
   @keyframes fadeIn {
