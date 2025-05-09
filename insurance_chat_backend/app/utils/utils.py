@@ -152,8 +152,7 @@ def get_chat_result(query: str, documents: list[str], get_stream_id: Callable[[]
     5. Documents에 없는 내용이어서 모른다고 하는 답변은 사용자에게 관심없는 내용입니다. 사용자가 궁금해하지 않는 내용은 답변에 포함시키지 말고 질문에 사실로만 답변하세요.
     6. 조문, 조항, 상품명, 회사명같은 명사는 요약하지 말고 반드시 표기하세요.
     7. 여러 조문을 인용할 때는 어느 보험 상품의 조문인지 반드시 표기하세요.
-    8. 사용자 질문에 답변하기 위해 참고할 Documents가 없을 경우 모른다고 하세요.
-    9. 반드시 제공된 Documents 안에서만 답변하세요. 
+    8. 만약 Query에 해당하는 Documents가 없을 경우 모른다고 하세요.
     """
     stream_result = openai_client.chat.completions.create(
         model="gpt-4.1-mini",
