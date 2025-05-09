@@ -13,9 +13,7 @@
   border: 1px solid #eee;
   box-shadow: 0 5px 60px rgba(0, 0, 0, 0.2);
   visibility: hidden;
-  opacity: 0;
   transform: translateY(-60px);
-  transition: visibility 0s 0.2s;
 
   &.visible {
     animation: fadeIn 0.2s ease-in-out forwards;
