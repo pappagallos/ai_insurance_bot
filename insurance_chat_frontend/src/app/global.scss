@@ -27,6 +27,7 @@ em {
 table {
   border-collapse: collapse;
   border-spacing: 0;
+  margin-bottom: 20px;
 }
 
 th,
@@ -35,12 +36,6 @@ td {
   border: 1px solid #a5a5a5;
   font-size: 1.4rem;
   word-break: keep-all;
-}
-
-tr:last-child {
-  td {
-    border-bottom: 0;
-  }
 }
 
 th {

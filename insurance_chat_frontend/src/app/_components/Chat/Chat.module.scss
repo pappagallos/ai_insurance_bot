@@ -4,7 +4,8 @@
   bottom: 30px;
   display: flex;
   flex-direction: column;
-  width: 500px;
+  max-width: 1000px;
+  min-width: 450px;
   height: 700px;
   border-radius: 30px;
   background: #fff;
@@ -150,6 +151,7 @@
         padding: 0 12px;
         border-radius: 18px;
         box-sizing: border-box;
+        word-break: keep-all;
 
         p {
           font-size: 1.4rem;
@@ -175,6 +177,7 @@
       border-radius: 18px;
       box-sizing: border-box;
       white-space: pre-wrap;
+      word-break: keep-all;
     }
   }
 }
