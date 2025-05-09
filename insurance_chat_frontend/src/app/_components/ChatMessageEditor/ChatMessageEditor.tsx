@@ -40,14 +40,13 @@ export const AutoResizeTextarea = ({
 }: AutoResizeTextareaProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  function clearTextareaHeight() {
+    if (!textareaRef.current) return;
+    textareaRef.current.style.height = '38px';
+  }
+
   function adjustTextareaHeight() {
     if (!textareaRef.current) return;
-
-    if (value.replace(/(\r\n|\n|\r)/gm, '').trim()) {
-      textareaRef.current.style.height = '38px';
-      return;
-    }
-
     textareaRef.current.style.height = 'auto';
     textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
   }
@@ -61,7 +60,7 @@ export const AutoResizeTextarea = ({
     if (!value.trim()) return;
     if (event.key === 'Enter' && !event.shiftKey) {
       onEnter();
-      adjustTextareaHeight();
+      clearTextareaHeight();
     }
   }
 
@@ -92,8 +91,8 @@ export const ChatMessageEditor = ({ onSend, disabled }: ChatMessageEditorProps) 
   );
 
   function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    const value = event.target.value.trim();
-    chatEnvironmentContext?.setDisabledSendButton(!value);
+    const value = event.target.value;
+    chatEnvironmentContext?.setDisabledSendButton(!value.trim());
     setMessage(value);
   }
 
