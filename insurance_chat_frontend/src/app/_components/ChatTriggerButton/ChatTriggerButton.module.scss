@@ -1,0 +1,31 @@
+.chat_trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 25px;
+  background: linear-gradient(45deg, #2454ce, #34c2e2);
+  box-shadow: 0 5px 30px rgba(0, 150, 249, 0.2);
+  z-index: 9999;
+  transition: all 0.025s ease-in-out;
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(1.05);
+  }
+
+  &:active {
+    scale: 0.95;
+    filter: brightness(0.95);
+  }
+}
+
+.chat_trigger_icon {
+  width: 65%;
+  height: auto;
+  object-fit: cover;
+}

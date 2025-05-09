@@ -1,6 +1,9 @@
+'use client';
+
 import { createContext, useMemo, useState } from 'react';
 
 export interface InitChatEnvironmentContextType {
+  isOpen: boolean;
   appName: string;
   appDescription: string;
   appIcon: string;
@@ -14,6 +17,7 @@ export interface InitChatEnvironmentContextType {
 }
 
 export interface ChatEnvironmentContextType extends InitChatEnvironmentContextType {
+  setIsOpen: (isOpen: boolean) => void;
   setDisabledSendButton: (disabled: boolean) => void;
 }
 
@@ -24,6 +28,7 @@ export interface ChatEnvironmentProviderProps extends InitChatEnvironmentContext
 export const ChatEnvironmentContext = createContext<ChatEnvironmentContextType | null>(null);
 
 export function ChatEnvironmentProvider({
+  isOpen: initIsOpen,
   appName,
   appDescription,
   appIcon,
@@ -36,10 +41,12 @@ export function ChatEnvironmentProvider({
   disabledSendButton: initDisabledSendButton,
   children,
 }: ChatEnvironmentProviderProps) {
+  const [isOpen, setIsOpen] = useState<boolean>(initIsOpen);
   const [disabledSendButton, setDisabledSendButton] = useState<boolean>(initDisabledSendButton);
 
   const value = useMemo(() => {
     return {
+      isOpen,
       appName,
       appDescription,
       appIcon,
@@ -50,9 +57,11 @@ export function ChatEnvironmentProvider({
       botAvatar,
       botWelcomeMessage,
       disabledSendButton,
+      setIsOpen,
       setDisabledSendButton,
     };
   }, [
+    isOpen,
     appName,
     appDescription,
     appIcon,
