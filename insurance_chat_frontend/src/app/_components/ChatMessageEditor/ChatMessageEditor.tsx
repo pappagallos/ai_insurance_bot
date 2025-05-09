@@ -54,8 +54,8 @@ export const AutoResizeTextarea = ({
   function handleKeyUp(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (!value.trim()) return;
     if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
       onEnter();
+      adjustTextareaHeight();
     }
   }
 
@@ -86,8 +86,9 @@ export const ChatMessageEditor = ({ onSend, disabled }: ChatMessageEditorProps) 
   );
 
   function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    chatEnvironmentContext?.setDisabledSendButton(!event.target.value.trim());
-    setMessage(event.target.value);
+    const value = event.target.value.trim();
+    chatEnvironmentContext?.setDisabledSendButton(!value);
+    setMessage(value);
   }
 
   function handleClick() {
@@ -98,6 +99,7 @@ export const ChatMessageEditor = ({ onSend, disabled }: ChatMessageEditorProps) 
 
   function clearMessage() {
     setMessage('');
+    chatEnvironmentContext?.setDisabledSendButton(true);
   }
 
   return (
