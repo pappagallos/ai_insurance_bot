@@ -42,6 +42,12 @@ export const AutoResizeTextarea = ({
 
   function adjustTextareaHeight() {
     if (!textareaRef.current) return;
+
+    if (value.replace(/(\r\n|\n|\r)/gm, '').trim()) {
+      textareaRef.current.style.height = '38px';
+      return;
+    }
+
     textareaRef.current.style.height = 'auto';
     textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
   }
