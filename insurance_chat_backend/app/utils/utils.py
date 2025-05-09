@@ -170,7 +170,6 @@ def get_chat_result(query: str, documents: list[str], get_stream_id: Callable[[]
         chunk_text = chunk.choices[0].delta.content
         if chunk_text:  
             full_text += chunk_text
-            print(chunk_text)
             st4 = json.dumps({"type": "processing", "code": "3", "message": chunk_text})
             yield f"id: {get_stream_id()}\n"
             yield f"data: {st4}\n\n"

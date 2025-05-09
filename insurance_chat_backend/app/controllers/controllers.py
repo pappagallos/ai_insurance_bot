@@ -22,37 +22,27 @@ def get_chat_event_stream(query: str):
     for cosine_document in cosine_documents:
         documents.append(json.dumps(cosine_document, ensure_ascii=False))
 
-    # print("cosine_documents", cosine_documents)
-    # print("-"*100)
-
     keywords = get_keyword_in_query(query)
     keywords = " ".join(keywords)
-    # print("keywords", keywords)
-    # print("-"*100)
+
+    current_app.logger.info('[Chat API] Query: %s', query)
+    current_app.logger.info('[Chat API] Keywords: %s', keywords)
     
     es_documents = get_es_result(keywords)
     for es_document in es_documents:
         documents.append(json.dumps(es_document, ensure_ascii=False))
-
-    # print("es_documents", es_documents)
-    # print("-"*100)
-
-    # print("documents", documents)
-    # print("-"*100)
-
     # st1 = json.dumps({"type": "processing", "code": "1", "message": "FETCH RELATED DOCUMENTS"})
     # yield f"id: {get_stream_id()}\n"
     # yield f"data: {st1}\n\n"
 
     rerank_result = get_rerank_result(query, documents)
 
-    # print("rerank_result", rerank_result)
-    # print("-"*100)
     # st2 = json.dumps({"type": "processing", "code": "2", "message": "RE-RANKING"})
     # yield f"id: {get_stream_id()}\n"
     # yield f"data: {st2}\n\n"
 
-    yield from get_chat_result(query, rerank_result, get_stream_id)
+    answer = yield from get_chat_result(query, rerank_result, get_stream_id)
+    current_app.logger.info('[Chat API] Answer: %s', answer)
     # st3 = json.dumps({"type": "processing", "code": "4", "message": "CHAT COMPLETE"})
     # yield f"id: {get_stream_id()}\n"
     # yield f"data: {st3}\n\n"
