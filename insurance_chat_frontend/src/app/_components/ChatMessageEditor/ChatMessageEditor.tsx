@@ -18,7 +18,7 @@ export const ChatSendButton = ({ disabled, onClick }: ChatSendButtonProps) => {
       className={cn(styles.send_button, {
         [styles.disabled]: disabled,
       })}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
     >
       <SendIcon />
     </button>
