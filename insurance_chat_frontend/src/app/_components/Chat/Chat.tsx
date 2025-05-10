@@ -99,6 +99,7 @@ interface ChatHistory {
 
 interface ChatProps {
   chatTrigger: React.ReactNode;
+  chatTriggerMessage?: string;
 }
 
 export const Chat = ({ chatTrigger }: ChatProps) => {
@@ -123,66 +124,108 @@ export const Chat = ({ chatTrigger }: ChatProps) => {
     }, 300);
   }
 
+  async function fetchChatResponse(query: string) {
+    const response = await fetch('/apis/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/event-stream',
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    return response;
+  }
+
+  async function processStreamResponse(
+    reader: ReadableStreamDefaultReader<Uint8Array>,
+    tempId: string,
+  ) {
+    let accumulatedText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = new TextDecoder().decode(value);
+      accumulatedText = parseChunkAndUpdateChat(chunk, accumulatedText, tempId);
+      scrollToBottom();
+    }
+  }
+
+  function parseChunkAndUpdateChat(chunk: string, accumulatedText: string, tempId: string): string {
+    const lines = chunk.split('\n');
+    let updatedText = accumulatedText;
+
+    for (const line of lines) {
+      if (line.startsWith('data:')) {
+        const eventData = line.slice(5).trim();
+        if (eventData) {
+          try {
+            const jsonData = JSON.parse(eventData);
+            const content = jsonData.message;
+            updatedText += content;
+          } catch {
+            console.error('Error parsing JSON:', eventData);
+          }
+        }
+      }
+    }
+
+    setChatHistory(prev =>
+      prev.map(item =>
+        item.id === tempId ? { ...item, message: updatedText, isLoading: false } : item,
+      ),
+    );
+
+    return updatedText;
+  }
+
+  function addLoadingBotMessage() {
+    const tempId = Date.now().toString();
+    setChatHistory(prev => [
+      ...prev,
+      {
+        id: tempId,
+        rule: 'bot',
+        message: '',
+        isLoading: true,
+        isMarkdown: true,
+      },
+    ]);
+    return tempId;
+  }
+
   async function streamChat(query: string) {
     setIsLoading(true);
 
     try {
-      const tempId = Date.now().toString();
-      setChatHistory(prev => [
-        ...prev,
-        {
-          id: tempId,
-          rule: 'bot',
-          message: '',
-          isLoading: true,
-          isMarkdown: true,
-        },
-      ]);
+      const tempId = addLoadingBotMessage();
       scrollToBottom();
 
-      const response = await fetch('/apis/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/event-stream',
-        },
-        body: JSON.stringify({ query }),
-      });
-
+      const response = await fetchChatResponse(query);
       const reader = response.body?.getReader();
+
       if (!reader) throw new Error('No reader available');
 
-      let accumulatedText = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split('\n');
-        for (const line of lines) {
-          if (line.startsWith('data:')) {
-            const eventData = line.slice(5).trim();
-            if (eventData) {
-              try {
-                const jsonData = JSON.parse(eventData);
-                const content = jsonData.message;
-                accumulatedText += content;
-              } catch {
-                console.error('Error parsing JSON:', eventData);
-              }
-            }
-          }
-        }
-
-        setChatHistory(prev =>
-          prev.map(item =>
-            item.id === tempId ? { ...item, message: accumulatedText, isLoading: false } : item,
-          ),
-        );
-        scrollToBottom();
-      }
+      await processStreamResponse(reader, tempId);
     } catch (error) {
       console.error('Error streaming chat:', error);
+      // Handle error in UI
+      setChatHistory(prev =>
+        prev.map(item =>
+          item.isLoading
+            ? {
+                ...item,
+                message: '죄송합니다. 요청을 처리하는 중 오류가 발생했습니다.',
+                isLoading: false,
+              }
+            : item,
+        ),
+      );
     } finally {
       setIsLoading(false);
     }
