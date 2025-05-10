@@ -39,8 +39,11 @@ def question(q: str):
     # STEP 04: hybrid search
     documents = search_processor.hybrid_search(" ".join(keywords), embedding)
     
+    #TODO reranker
+    # STEP 05: rerank
+
     #TODO documents를 openai에 전송
-    # STEP 05: ask to AI
+    # STEP 06: ask to AI
     answer = ""
 
     return {"question": q, "answer": answer}
