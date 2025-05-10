@@ -4,13 +4,52 @@
   bottom: 30px;
   display: flex;
   flex-direction: column;
-  width: 500px;
+  max-width: 1000px;
+  min-width: 450px;
   height: 700px;
   border-radius: 30px;
   background: #fff;
   overflow: hidden;
   border: 1px solid #eee;
   box-shadow: 0 5px 60px rgba(0, 0, 0, 0.2);
+  visibility: hidden;
+  transform: translateY(-60px);
+
+  &.visible {
+    animation: fadeIn 0.2s ease-in-out forwards;
+  }
+
+  &.was_visible {
+    animation: fadeOut 0.2s ease-in-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-60px);
+      visibility: visible;
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(-80px);
+      visibility: visible;
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: translateY(-80px);
+      visibility: visible;
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(-60px);
+      visibility: visible;
+    }
+  }
 }
 
 .header {
@@ -20,7 +59,7 @@
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 15px 20px;
+  padding: 15px;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(10px);
   box-sizing: border-box;
@@ -142,7 +181,7 @@
 
       .message {
         display: inline-block;
-        max-width: 90%;
+        max-width: 85%;
         line-height: 1.4;
         color: #313131;
         background: #f2f2f2;
@@ -150,6 +189,7 @@
         padding: 0 12px;
         border-radius: 18px;
         box-sizing: border-box;
+        word-break: keep-all;
 
         p {
           font-size: 1.4rem;
@@ -165,7 +205,7 @@
     margin-bottom: 15px;
 
     .message {
-      max-width: 90%;
+      max-width: 85%;
       font-size: 1.4rem;
       line-height: 1.4;
       color: #fff;
@@ -175,6 +215,7 @@
       border-radius: 18px;
       box-sizing: border-box;
       white-space: pre-wrap;
+      word-break: keep-all;
     }
   }
 }

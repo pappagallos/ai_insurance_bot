@@ -1,31 +1,16 @@
-'use client';
-
 import cn from 'classnames';
 import { marked } from 'marked';
 import markedExtendedTables from '@fsegurai/marked-extended-tables';
 
 marked.use(markedExtendedTables());
 
-import React, { forwardRef, useRef, useState } from 'react';
-
-import { ChatMessageEditor } from '../ChatMessageEditor/ChatMessageEditor';
-import { ChatEnvironmentProvider, InitChatEnvironmentContextType } from './ChatEnvironmentContext';
-
-import styles from './Chat.module.scss';
+import React, { forwardRef, useContext, useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 
-const initChatEnvironmentContext: InitChatEnvironmentContextType = {
-  appName: process.env.NEXT_PUBLIC_APP_NAME as string,
-  appDescription: process.env.NEXT_PUBLIC_APP_DESCRIPTION as string,
-  appIcon: process.env.NEXT_PUBLIC_APP_ICON as string,
-  appMainImage: process.env.NEXT_PUBLIC_APP_MAIN_IMAGE as string,
-  appBackground: process.env.NEXT_PUBLIC_APP_BACKGROUND_IMAGE as string,
-  messageEditorPlaceholder: process.env.NEXT_PUBLIC_MESSAGE_EDITOR_PLACEHOLDER as string,
-  botName: process.env.NEXT_PUBLIC_BOT_NAME as string,
-  botAvatar: process.env.NEXT_PUBLIC_BOT_AVATAR as string,
-  botWelcomeMessage: process.env.NEXT_PUBLIC_BOT_WELCOME_MESSAGE as string,
-  disabledSendButton: true,
-};
+import { ChatMessageEditor } from '../ChatMessageEditor/ChatMessageEditor';
+import { ChatEnvironmentContext } from './ChatEnvironmentContext';
+
+import styles from './Chat.module.scss';
 
 interface ChatCompositionProps {
   children: React.ReactNode;
@@ -51,17 +36,19 @@ const ChatTime = ({ date }: ChatTimeProps) => {
 };
 
 const BotMessage = ({ textMessage, htmlMessage, isLoading }: MessageProps) => {
+  const chatEnvironmentContext = useContext(ChatEnvironmentContext);
+
   return (
     <div className={styles.bot}>
       <div className={styles.bot_avatar}>
         <img
-          src={initChatEnvironmentContext.botAvatar}
-          alt={initChatEnvironmentContext.appName}
+          src={chatEnvironmentContext?.botAvatar}
+          alt={chatEnvironmentContext?.appName}
           className={styles.bot_avatar_image}
         />
       </div>
       <div className={styles.bot_message}>
-        <div className={styles.name}>{initChatEnvironmentContext.botName}</div>
+        <div className={styles.name}>{chatEnvironmentContext?.botName}</div>
         {isLoading && (
           <div className={cn(styles.message, styles.loading)}>
             <img src="/assets/bot_loading.svg" alt="bot_loading" />
@@ -110,10 +97,21 @@ interface ChatHistory {
   isMarkdown?: boolean;
 }
 
-export const Chat = () => {
+interface ChatProps {
+  chatTrigger: React.ReactNode;
+}
+
+export const Chat = ({ chatTrigger }: ChatProps) => {
+  const chatEnvironmentContext = useContext(ChatEnvironmentContext);
+
   const chatHistoryRef = useRef<HTMLDivElement>(null);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [wasVisible, setWasVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (chatEnvironmentContext?.isOpen) setWasVisible(true);
+  }, [chatEnvironmentContext?.isOpen]);
 
   function scrollToBottom() {
     const timeout = setTimeout(() => {
@@ -157,15 +155,10 @@ export const Chat = () => {
 
       while (true) {
         const { done, value } = await reader.read();
-
-        if (done) {
-          break;
-        }
+        if (done) break;
 
         const chunk = new TextDecoder().decode(value);
-
         const lines = chunk.split('\n');
-
         for (const line of lines) {
           if (line.startsWith('data:')) {
             const eventData = line.slice(5).trim();
@@ -196,36 +189,45 @@ export const Chat = () => {
   }
 
   return (
-    <ChatEnvironmentProvider {...initChatEnvironmentContext}>
-      <div className={styles.chat}>
+    <React.Fragment>
+      {/* 챗봇 트리거 컴포넌트 */}
+      {chatTrigger}
+
+      {/* 챗봇 컴포넌트 */}
+      <div
+        className={cn(styles.chat, {
+          [styles.visible]: chatEnvironmentContext?.isOpen,
+          [styles.was_visible]: wasVisible && !chatEnvironmentContext?.isOpen,
+        })}
+      >
         <Chat.Header>
           <div className={styles.app_content}>
             <div className={styles.app_icon}>
               <Image
-                src={initChatEnvironmentContext.appIcon}
-                alt={initChatEnvironmentContext.appName}
+                src={chatEnvironmentContext?.appIcon as string}
+                alt={chatEnvironmentContext?.appName as string}
                 width={40}
                 height={40}
               />
             </div>
             <div className={styles.app_information}>
-              <p className={styles.app_name}>{initChatEnvironmentContext.appName}</p>
-              <p className={styles.app_description}>{initChatEnvironmentContext.appDescription}</p>
+              <p className={styles.app_name}>{chatEnvironmentContext?.appName}</p>
+              <p className={styles.app_description}>{chatEnvironmentContext?.appDescription}</p>
             </div>
           </div>
         </Chat.Header>
         <Chat.Body ref={chatHistoryRef}>
           <div className={styles.chat_information}>
             <img
-              src={initChatEnvironmentContext.appMainImage}
-              alt={initChatEnvironmentContext.appName}
+              src={chatEnvironmentContext?.appMainImage}
+              alt={chatEnvironmentContext?.appName}
               className={styles.app_main_image}
             />
-            <p className={styles.chat_title}>{initChatEnvironmentContext.appName}에 문의하기</p>
+            <p className={styles.chat_title}>{chatEnvironmentContext?.appName}에 문의하기</p>
           </div>
           <div className={styles.chat_history}>
             <ChatTime date={new Date()} />
-            <BotMessage htmlMessage={initChatEnvironmentContext.botWelcomeMessage} />
+            <BotMessage htmlMessage={chatEnvironmentContext?.botWelcomeMessage} />
             {chatHistory.map((chat, index) => {
               if (chat.rule === 'user')
                 return <UserMessage textMessage={chat.message as string} key={index} />;
@@ -264,7 +266,7 @@ export const Chat = () => {
           />
         </Chat.Footer>
       </div>
-    </ChatEnvironmentProvider>
+    </React.Fragment>
   );
 };
 
