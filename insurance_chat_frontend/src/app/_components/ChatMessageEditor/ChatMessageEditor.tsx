@@ -18,7 +18,7 @@ export const ChatSendButton = ({ disabled, onClick }: ChatSendButtonProps) => {
       className={cn(styles.send_button, {
         [styles.disabled]: disabled,
       })}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
     >
       <SendIcon />
     </button>
@@ -40,6 +40,11 @@ export const AutoResizeTextarea = ({
 }: AutoResizeTextareaProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  function clearTextareaHeight() {
+    if (!textareaRef.current) return;
+    textareaRef.current.style.height = '38px';
+  }
+
   function adjustTextareaHeight() {
     if (!textareaRef.current) return;
     textareaRef.current.style.height = 'auto';
@@ -54,8 +59,8 @@ export const AutoResizeTextarea = ({
   function handleKeyUp(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (!value.trim()) return;
     if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
       onEnter();
+      clearTextareaHeight();
     }
   }
 
@@ -86,8 +91,9 @@ export const ChatMessageEditor = ({ onSend, disabled }: ChatMessageEditorProps) 
   );
 
   function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    chatEnvironmentContext?.setDisabledSendButton(!event.target.value.trim());
-    setMessage(event.target.value);
+    const value = event.target.value;
+    chatEnvironmentContext?.setDisabledSendButton(!value.trim());
+    setMessage(value);
   }
 
   function handleClick() {
@@ -98,6 +104,7 @@ export const ChatMessageEditor = ({ onSend, disabled }: ChatMessageEditorProps) 
 
   function clearMessage() {
     setMessage('');
+    chatEnvironmentContext?.setDisabledSendButton(true);
   }
 
   return (

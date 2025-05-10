@@ -2,7 +2,7 @@ import json
 
 from flask import Blueprint, current_app, request, make_response, Response, g, stream_with_context
 
-from ..utils.utils import get_cosine_result, get_rerank_result, get_chat_result
+from ..utils.utils import get_cosine_result, get_es_result, get_rerank_result, get_chat_result, get_keyword_in_query
 
 from ..const.constant import API_KEYS
 
@@ -17,19 +17,32 @@ def get_chat_event_stream(query: str):
         stream_id += 1
         return stream_id
     
-    documents = get_cosine_result(g.db.cursor(), query)
-    documents = [json.dumps(document, ensure_ascii=False) for document in documents]
+    documents = []
+    cosine_documents = get_cosine_result(g.db.cursor(), query)
+    for cosine_document in cosine_documents:
+        documents.append(json.dumps(cosine_document, ensure_ascii=False))
+
+    keywords = get_keyword_in_query(query)
+    keywords = " ".join(keywords)
+
+    current_app.logger.info('[Chat API] Query: %s', query)
+    current_app.logger.info('[Chat API] Keywords: %s', keywords)
     
+    es_documents = get_es_result(keywords)
+    for es_document in es_documents:
+        documents.append(json.dumps(es_document, ensure_ascii=False))
     # st1 = json.dumps({"type": "processing", "code": "1", "message": "FETCH RELATED DOCUMENTS"})
     # yield f"id: {get_stream_id()}\n"
     # yield f"data: {st1}\n\n"
 
     rerank_result = get_rerank_result(query, documents)
+
     # st2 = json.dumps({"type": "processing", "code": "2", "message": "RE-RANKING"})
     # yield f"id: {get_stream_id()}\n"
     # yield f"data: {st2}\n\n"
 
-    yield from get_chat_result(query, rerank_result, get_stream_id)
+    answer = yield from get_chat_result(query, rerank_result, get_stream_id)
+    current_app.logger.info('[Chat API] Answer: %s', answer)
     # st3 = json.dumps({"type": "processing", "code": "4", "message": "CHAT COMPLETE"})
     # yield f"id: {get_stream_id()}\n"
     # yield f"data: {st3}\n\n"
