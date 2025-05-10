@@ -41,3 +41,5 @@ next-env.d.ts
 config.py
 uwsgi.log
 __pycache__
+
+.env
