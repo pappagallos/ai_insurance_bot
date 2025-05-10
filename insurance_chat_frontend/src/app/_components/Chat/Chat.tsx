@@ -237,10 +237,11 @@ export const Chat = ({ chatTrigger }: ChatProps) => {
   if (chatEnvironmentContext) {
     chatEnvironmentContext.sendMessage = async (message: string) => {
       // 채팅 창 열기
-      chatEnvironmentContext.setIsOpen(true);
+      if (!chatEnvironmentContext?.isOpen) {
+        chatEnvironmentContext.setIsOpen(true);
+        await sleep(500);
+      }
       chatEnvironmentContext.setDisabledSendButton(true);
-
-      await sleep(500);
 
       // 사용자 메시지 추가
       setChatHistory([
