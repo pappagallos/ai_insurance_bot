@@ -47,7 +47,7 @@ export default function Page() {
         <p className={styles.about_chat_description}>
           지금 농협생명보험의 5가지 암보험 상품에 대해 모두 질문해 보시거나,
           <br />
-          궁금한 점을 코리에게 직접 물어보거나 아래 추천 질문을 클릭해보세요.
+          아래 추천 질문을 클릭하여 질문해보세요.
         </p>
         <RecommendQuestions />
         <p className={styles.about_chat_author}>
