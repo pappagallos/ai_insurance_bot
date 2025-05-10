@@ -1,7 +1,7 @@
 def split_complex_question(user_query):
     return f"""
     다음은 복합 질문을 여러 개의 개별 질문으로 분해하는 예시입니다. 이 예시와 같은 방식으로 마지막 질문을 분해해주세요.
-
+    ** 질문이 분해하지 않아도 되는 1개의 질문을 가진 문장이라면 아무런 답변도 하지 마세요 **
     ---
     복합 질문 예시 1: 부산 해운대 근처에 오션뷰가 좋은 호텔과 근처 맛집을 알려주고, 호텔의 1박 가격대도 궁금해.
     분해된 질문 예시 1:
@@ -12,7 +12,7 @@ def split_complex_question(user_query):
     ["제주도 애월읍에서 아이와 함께 가기 좋은 카페 (노키즈존 제외)는 어디인가?","제주도 애월읍에서 아이와 함께 가기 좋은 해변은 어디인가?"]
     ---
 
-    이제 아래 복합 질문을 분해해주세요. 답변은 분해된 질문만 해주세요. 다만 질문이 분해하지 않아도 되는 1개의 질문을 가진 문장이라면 추가하지 마세요.:
+    이제 아래 복합 질문을 분해해주세요. 답변은 분해된 질문만 해주세요. :
 
     복합 질문: {user_query}
 
@@ -70,6 +70,7 @@ def summary_answers(answers):
     {answers}
 
     ## Response Format:
+    0. Answer must be **KOREAN**
     1. Main Answer: Provide a clear, direct answer to the user's question
     2. Detailed Information: Include specific details about coverage, benefits, and terms
     3. Product Comparison: If multiple products are mentioned, compare them
