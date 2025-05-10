@@ -253,6 +253,7 @@ export const Chat = ({ chatTrigger }: ChatProps) => {
           isMarkdown: false,
         },
       ]);
+      scrollToBottom();
 
       await sleep(1000);
 
