@@ -1,20 +1,33 @@
-import os
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List, Dict, Any
+import traceback
+from services.question_service import QuestionService
+from services.gh_question_service import GHQuestionService
 
-from gh.model import OpenAIEmbeddingProcessor
-from gh.search import SearchProcessor
-from gh.keyword import RuleBasedKeywordExtractor
-from gh.keyword_bert import KeywordExtractorBERT
-from gh.model import initClient
+class QuestionRequest(BaseModel):
+    question: str
+
+class SplitQuestionResponse(BaseModel):
+    questions: List[str]
+
+class KeywordResponse(BaseModel):
+    keywords: List[str]
+    rule_based_keywords: List[str]
+    bert_keywords: List[str]
+
+class SearchResponse(BaseModel):
+    results: List[Dict[str, Any]]
+
+class AnswerResponse(BaseModel):
+    answer: str
+
+class FinalAnswerResponse(BaseModel):
+    question: str
+    answer: str
 
 app = FastAPI()
-# init AI model
-client = initClient()
-embedding_processor = OpenAIEmbeddingProcessor(client)
-
-search_processor = SearchProcessor()
-keyword_processor = RuleBasedKeywordExtractor()
-keyword_processor_bert = KeywordExtractorBERT()
+question_service: QuestionService = GHQuestionService() # --> 이 부분만 개별로 바꾸면 됨
 
 @app.get("/")
 def read_root():
@@ -25,43 +38,95 @@ def question(q: str):
     """
     사용자의 질문에 대한 답변을 생성하고 제공
     """
-    #TODO pre processing to AI
-    # STEP 01: 질문 cleansing
+    try:
+        return question_service.process_question(q)
+    except Exception as e:
+        print(f"[ERROR] /question API 호출 중 오류 발생")
+        print(f"질문: {q}")
+        print(f"에러 메시지: {str(e)}")
+        print(f"상세 스택 트레이스:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-    # STEP 02: extract keywords
-    keywords = keyword_processor.extract_keywords(q)
-    keywords_bert = keyword_processor_bert.extract_keywords(q)
-    keywords.extend(keywords_bert)
+@app.get("/split-question", response_model=SplitQuestionResponse)
+def split_question(q: str):
+    """
+    복합 질문을 개별 질문으로 분해
+    """
+    try:
+        questions = question_service.split_question(q)
+        return SplitQuestionResponse(questions=questions)
+    except Exception as e:
+        print(f"[ERROR] /split-question API 호출 중 오류 발생")
+        print(f"질문: {q}")
+        print(f"에러 메시지: {str(e)}")
+        print(f"상세 스택 트레이스:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-    # STEP 03: create embedding vector
-    embedding = embedding_processor.get_embedding(q)
+@app.get("/keywords", response_model=KeywordResponse)
+def extract_keywords_only(q: str):
+    """
+    질문에서 키워드만 추출 (규칙 기반 + BERT)
+    """
+    try:
+        keywords = question_service.extract_keywords(q)
+        return KeywordResponse(**keywords)
+    except Exception as e:
+        print(f"[ERROR] /keywords API 호출 중 오류 발생")
+        print(f"질문: {q}")
+        print(f"에러 메시지: {str(e)}")
+        print(f"상세 스택 트레이스:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-    # STEP 04: hybrid search
-    documents = search_processor.hybrid_search(" ".join(keywords), embedding)
-    
-    #TODO reranker
-    # STEP 05: rerank
+@app.get("/search", response_model=SearchResponse)
+def search(q: str):
+    """
+    키워드와 임베딩을 사용한 하이브리드 검색
+    """
+    try:
+        documents = question_service.search_documents(q)
+        return SearchResponse(results=documents)
+    except Exception as e:
+        print(f"[ERROR] /search API 호출 중 오류 발생")
+        print(f"질문: {q}")
+        print(f"에러 메시지: {str(e)}")
+        print(f"상세 스택 트레이스:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-    #TODO documents를 openai에 전송
-    # STEP 06: ask to AI
-    answer = ""
-
-    return {"question": q, "answer": answer}
-
+@app.get("/generate-answer", response_model=AnswerResponse)
+def generate_answer(q: str):
+    """
+    검색 결과를 바탕으로 답변 생성
+    """
+    try:
+        documents = question_service.search_documents(q)
+        answer = question_service.generate_answer(q, documents)
+        return AnswerResponse(answer=answer)
+    except Exception as e:
+        print(f"[ERROR] /generate-answer API 호출 중 오류 발생")
+        print(f"질문: {q}")
+        print(f"에러 메시지: {str(e)}")
+        print(f"상세 스택 트레이스:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # 이하는 그냥 테스트용 API
 @app.get("/retrieve")
 def retrieve(q: str):
-    return {"retrieve": search_processor.hybrid_search(q)}
-
-@app.get("/keyword")
-def keyword(q: str):
-    return {"keyword": keyword_processor.extract_keywords(q)}
-
-@app.get("/keyword_bert")
-def keyword_bert(q: str):
-    return {"keyword": keyword_processor_bert.extract_keywords(q)}
+    try:
+        return {"retrieve": question_service.search_processor.hybrid_search(q)}
+    except Exception as e:
+        print(f"[ERROR] /retrieve API 호출 중 오류 발생")
+        print(f"질문: {q}")
+        print(f"에러 메시지: {str(e)}")
+        print(f"상세 스택 트레이스:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/embeddings")
-def question(q: str):
-    return {"embedding": embedding_processor.get_embedding(q)}
+def get_embeddings(q: str):
+    try:
+        return {"embedding": question_service.embedding_processor.get_embedding(q)}
+    except Exception as e:
+        print(f"[ERROR] /embeddings API 호출 중 오류 발생")
+        print(f"질문: {q}")
+        print(f"에러 메시지: {str(e)}")
+        print(f"상세 스택 트레이스:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))

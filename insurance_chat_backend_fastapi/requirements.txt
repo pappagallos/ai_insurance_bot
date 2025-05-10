@@ -1,0 +1,7 @@
+fastapi==0.68.1
+uvicorn==0.15.0
+pydantic==1.8.2
+elasticsearch==7.17.0
+numpy==1.21.2
+pytest==6.2.5
+httpx==0.23.0  # FastAPI TestClient에 필요 
