@@ -14,6 +14,7 @@ export interface InitChatEnvironmentContextType {
   botAvatar: string;
   botWelcomeMessage: string;
   disabledSendButton: boolean;
+  sendMessage: (message: string) => void;
 }
 
 export interface ChatEnvironmentContextType extends InitChatEnvironmentContextType {
@@ -39,6 +40,7 @@ export function ChatEnvironmentProvider({
   botAvatar,
   botWelcomeMessage,
   disabledSendButton: initDisabledSendButton,
+  sendMessage,
   children,
 }: ChatEnvironmentProviderProps) {
   const [isOpen, setIsOpen] = useState<boolean>(initIsOpen);
@@ -59,6 +61,7 @@ export function ChatEnvironmentProvider({
       disabledSendButton,
       setIsOpen,
       setDisabledSendButton,
+      sendMessage,
     };
   }, [
     isOpen,
@@ -72,6 +75,7 @@ export function ChatEnvironmentProvider({
     botAvatar,
     botWelcomeMessage,
     disabledSendButton,
+    sendMessage,
   ]);
 
   return (

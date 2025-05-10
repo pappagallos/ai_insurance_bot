@@ -99,7 +99,6 @@ interface ChatHistory {
 
 interface ChatProps {
   chatTrigger: React.ReactNode;
-  chatTriggerMessage?: string;
 }
 
 export const Chat = ({ chatTrigger }: ChatProps) => {
@@ -229,6 +228,37 @@ export const Chat = ({ chatTrigger }: ChatProps) => {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  async function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  if (chatEnvironmentContext) {
+    chatEnvironmentContext.sendMessage = async (message: string) => {
+      // 채팅 창 열기
+      chatEnvironmentContext.setIsOpen(true);
+      chatEnvironmentContext.setDisabledSendButton(true);
+
+      await sleep(500);
+
+      // 사용자 메시지 추가
+      setChatHistory([
+        ...chatHistory,
+        {
+          id: Date.now().toString(),
+          rule: 'user',
+          message,
+          isLoading: false,
+          isMarkdown: false,
+        },
+      ]);
+
+      await sleep(1000);
+
+      // 채팅 응답 요청
+      await streamChat(message);
+    };
   }
 
   return (
