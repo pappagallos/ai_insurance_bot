@@ -20,6 +20,9 @@ def get_prompt(prompt_name: str, query: str, document: str) -> str:
         3. 각 문단이 사용자 질문의 의도와 얼마나 관련되는지 평가
         4. 가장 관련성 높은 문단을 기준으로 최종 점수 결정
 
+        ### 평가 형식
+        {{Score: [0부터 2 사이의 정수], Reason: [점수 부여 근거 설명]}}
+
         ### 제약 조건
         1. 오직 0, 1, 2 중 하나의 정수만 제출
         2. 추론 과정이나 설명 없이 숫자만 제출
@@ -69,7 +72,7 @@ def get_prompt(prompt_name: str, query: str, document: str) -> str:
         - 질문 해결에 전혀 도움이 되지 않음
 
         ### 평가 형식
-        {{Score: [0부터 4 사이 정수], Reason: [점수 부여 근거 설명]}}
+        {{Score: [0부터 4 사이의 정수], Reason: [점수 부여 근거 설명]}}
 
         ### 제약 조건
         1. 평가 형식으로 답변하세요.
