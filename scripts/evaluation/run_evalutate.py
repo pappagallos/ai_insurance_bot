@@ -58,7 +58,7 @@ def get_evaluation(prompt_name: str, query: str, document: str, retries: int = 0
 
 
 ndcg_score = []
-testset = pd.read_csv("rerank_query_document.csv")
+testset = pd.read_csv("query_document.csv")
 testset = testset.to_dict(orient="records")
 for index, query in enumerate(queries):
     print(f"Processing query: {query}")
@@ -73,7 +73,7 @@ for index, query in enumerate(queries):
     ndcg = ndcg_at_k(dcg, 20)
     ndcg_score.append(ndcg)
     df = pd.DataFrame(columns=["query", "document", "score", "reason"], data=data)
-    df.to_csv(f"rerank_{evaluate_prompt}_result_{index}.csv", index=True)
+    df.to_csv(f"{evaluate_prompt}_result_{index}.csv", index=True)
 
 ndcg_score = [score * 100 for score in ndcg_score]
 avg_ndcg_score = sum(ndcg_score) / len(ndcg_score)
