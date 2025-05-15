@@ -4,7 +4,9 @@ from typing import List
 import time
 from dotenv import load_dotenv
 import tiktoken
+import logging
 
+logger = logging.getLogger(__name__)
 class OpenAIAnswerProcessor:
     def __init__(self):
         load_dotenv()
@@ -16,12 +18,14 @@ class OpenAIAnswerProcessor:
         self.client = client
         
     def question(self, query: str) -> str:
+        logger.info("[R] query: {}".format(query))
         response = self.client.chat.completions.create(
             model="o1-mini",  # 사용할 OpenAI 모델
             messages=[
                 {"role": "user", "content": query}
             ],
         )
+        logger.info("[R] response: {}".format(response.choices[0].message.content))
         return response.choices[0].message.content
 
 

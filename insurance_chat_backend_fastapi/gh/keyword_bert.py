@@ -1,3 +1,7 @@
+import torch.multiprocessing as mp
+if mp.get_start_method(allow_none=True) != 'spawn':
+    mp.set_start_method('spawn', force=True)
+
 from keybert import KeyBERT
 from transformers import BertTokenizer, BertModel
 from typing import List, Dict
@@ -14,7 +18,7 @@ class KeywordExtractorBERT(KeywordExtractor):
         self.tokenizer = BertTokenizer.from_pretrained(model_name)
         self.model = BertModel.from_pretrained(model_name, trust_remote_code=True)
         
-        # KeyBERT 초기화
+        # KeyBERT 초기화 (병렬 처리를 위해 device 설정)
         self.keybert = KeyBERT(model=self.model)
         
     def extract_keywords(self, text: str, top_n: int = 5, 
@@ -57,7 +61,7 @@ class KeywordExtractorBERT(KeywordExtractor):
             return result
             
         except Exception as e:
-            print(f"키워드 추출 중 오류 발생: {e}")
+            print(f"BERT 키워드 추출 중 오류 발생: {e}")
             return []
             
     def get_embedding(self, text: str) -> List[float]:
