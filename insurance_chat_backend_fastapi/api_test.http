@@ -1,0 +1,31 @@
+### 기본 테스트
+GET http://localhost:8000/
+Accept: application/json
+
+### 전체 질문 처리
+GET http://localhost:8000/question?q=암보험 가입 조건이 어떻게 되나요?
+Accept: application/json
+
+### 질문 분해
+GET http://localhost:8000/split-question?q=암보험 가입 조건이 어떻게 되나요?
+Accept: application/json
+
+### 키워드 추출
+GET http://localhost:8000/keywords?q=암보험 가입 조건이 어떻게 되나요?
+Accept: application/json
+
+### 문서 검색
+GET http://localhost:8000/search?q=암보험 가입 조건이 어떻게 되나요?
+Accept: application/json
+
+### 답변 생성
+GET http://localhost:8000/generate-answer?q=암보험 가입 조건이 어떻게 되나요?
+Accept: application/json
+
+### 테스트용 API
+GET http://localhost:8000/retrieve?q=암보험
+Accept: application/json
+
+### 임베딩 테스트
+GET http://localhost:8000/embeddings?q=암보험
+Accept: application/json 

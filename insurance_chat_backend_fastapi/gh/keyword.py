@@ -8,7 +8,7 @@ class KeywordExtractor(ABC):
     """키워드 추출을 위한 추상 기본 클래스"""
     
     @abstractmethod
-    def extract_keywords(self, text: str, top_n: int = 5) -> List[Dict[str, any]]:
+    def extract_keywords(self, text: str, top_n: int = 5) -> List[str]:
         """
         텍스트에서 핵심 키워드를 추출합니다.
         
@@ -33,7 +33,7 @@ class RuleBasedKeywordExtractor(KeywordExtractor):
             '있는', '없는', '하는', '된', '될', '될', '되는', '되는', '되는'
         }
         
-    def extract_keywords(self, text: str, top_n: int = 5) -> List[Dict[str, any]]:
+    def extract_keywords(self, text: str, top_n: int = 5) -> List[str]:
         """
         Okt를 사용하여 텍스트에서 핵심 키워드를 추출합니다.
         
@@ -65,10 +65,11 @@ class RuleBasedKeywordExtractor(KeywordExtractor):
         # 상위 N개 키워드 반환
         result = []
         for word, freq in keyword_freq.most_common(top_n):
-            result.append({
-                "keyword": word,
-                "score": freq
-            })
+            result.append(word)
+            # result.append({
+            #     "keyword": word,
+            #     "score": freq
+            # })
             
         return result
     

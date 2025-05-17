@@ -18,7 +18,7 @@ class KeywordExtractorBERT(KeywordExtractor):
         self.keybert = KeyBERT(model=self.model)
         
     def extract_keywords(self, text: str, top_n: int = 5, 
-                        min_ngram: int = 1, max_ngram: int = 2) -> List[Dict[str, any]]:
+                        min_ngram: int = 1, max_ngram: int = 2) -> List[str]:
         """
         monologg KoBERT와 KeyBERT를 사용하여 텍스트에서 핵심 키워드를 추출합니다.
         
@@ -48,10 +48,11 @@ class KeywordExtractorBERT(KeywordExtractor):
             # 결과 포맷 변환
             result = []
             for keyword, score in keywords:
-                result.append({
-                    "keyword": keyword,
-                    "score": float(score)  # numpy float를 Python float로 변환
-                })
+                result.append(keyword)
+                # result.append({
+                #     "keyword": keyword,
+                #     "score": float(score)  # numpy float를 Python float로 변환
+                # })
             
             return result
             

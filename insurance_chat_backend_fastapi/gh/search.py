@@ -69,26 +69,16 @@ class SearchProcessor:
                                 ],
                                 "boost": 0.3
                             }
-                        },
+                        }
                         # 벡터 기반 검색 (KNN)
-                        {
+                        , {
                             "knn": {
                                 "field":"embedding",
                                 "query_vector": embedding_vector,
-                                "k": 10
-                            },
-                            "boost":0.7
+                                "k": 10,
+                                "boost":0.7
+                            }
                         }
-                        # {
-                        #     "script_score": {
-                        #         "query": {"match_all": {}},
-                        #         "script": {
-                        #             "source": "cosineSimilarity(params.query_vector, 'embedding') + 1.0",
-                        #             "params": {"query_vector": embedding_vector}
-                        #         },
-                        #         "boost": 0.7
-                        #     }
-                        # }
                     ]
                 }
             }
