@@ -4,12 +4,12 @@ import json
 import time
 import openai
 import pandas as pd
+from openai import OpenAI
 
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-from openai import OpenAI
 from prompt import get_prompt
 from score_function import ndcg_at_k
 from evaluation.queries import queries
@@ -28,14 +28,14 @@ def get_evaluation(prompt_name: str, query: str, document: str, retries: int = 0
                 messages=[{"role": "user", "content": get_prompt(prompt_name, query, document)}]
             )
             llm_response = response.choices[0].message.content.strip()
-            print("Response: ", llm_response)
+            # print("Response: ", llm_response)
 
             evaluation = json.loads(llm_response)
             if evaluation["score"] is None:
                 print("LLM 응답이 올바르지 않습니다. 다시 시도합니다.(score가 없습니다.)")
                 continue
             if evaluation["reason"] is None:
-                print("LLM 응답이 올바르지 않습니다. 다시 시도합니다.(reason가 없습니다.)")
+                print("LLM 응답이 올바르지 않습니다. 다시 시도합니다.(reason이 없습니다.)")
                 continue
             return evaluation
         except json.JSONDecodeError as error:
@@ -58,22 +58,31 @@ def get_evaluation(prompt_name: str, query: str, document: str, retries: int = 0
 
 
 ndcg_score = []
-testset = pd.read_csv("query_document.csv")
-testset = testset.to_dict(orient="records")
+testset = pd.read_csv("dataset.csv")
+testset_records = testset.to_dict(orient="records")
 for index, query in enumerate(queries):
-    print(f"Processing query: {query}")
+    print(f"Processing: {query}")
+
     dcg = []
     data = []
-    for test in list(filter(lambda x: x["query"] == query, testset)):
-        print("Document: ", test["document"])
+    query_records = list(filter(lambda x: x["query"] == query, testset_records))
+    for index, record in enumerate(query_records):
+        print(f"({index + 1}/{len(query_records)}) Processing LLM Judgement...")
+
         evaluate_prompt = "rulebase_0.0_to_1.0"
-        evaluation = get_evaluation(evaluate_prompt, query, test["document"])
+        evaluation = get_evaluation(evaluate_prompt, query, record["document"])
+        record["relevance_score"] = evaluation.get("score")
+        record["relevance_reason"] = evaluation.get("reason")
         dcg.append(evaluation.get("score"))
-        data.append({"query": query, "document": test["document"], "score": evaluation.get("score"), "reason": evaluation.get("reason")})
+        data.append({"query": query, "document": record["document"], "score": evaluation.get("score"), "reason": evaluation.get("reason")})
+    
     ndcg = ndcg_at_k(dcg, 20)
     ndcg_score.append(ndcg)
-    df = pd.DataFrame(columns=["query", "document", "score", "reason"], data=data)
-    df.to_csv(f"{evaluate_prompt}_result_{index}.csv", index=True)
+
+    print(f"nDCG@20 점수: {ndcg}점")
+
+    updated_df = pd.DataFrame(testset_records)
+    updated_df.to_csv("dataset.csv", index=True)
 
 ndcg_score = [score * 100 for score in ndcg_score]
 avg_ndcg_score = sum(ndcg_score) / len(ndcg_score)
