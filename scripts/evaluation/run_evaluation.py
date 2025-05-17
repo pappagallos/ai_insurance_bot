@@ -24,7 +24,7 @@ def get_evaluation(prompt_name: str, query: str, document: str, retries: int = 0
     while retries < max_retries:
         try:
             response = openai_client.chat.completions.create(
-                model="o1-mini",
+                model="o4-mini",
                 messages=[{"role": "user", "content": get_prompt(prompt_name, query, document)}]
             )
             llm_response = response.choices[0].message.content.strip()
