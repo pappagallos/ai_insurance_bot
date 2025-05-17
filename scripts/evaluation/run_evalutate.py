@@ -69,7 +69,7 @@ for index, query in enumerate(queries):
     for index, record in enumerate(query_records):
         print(f"({index + 1}/{len(query_records)}) Processing LLM Judgement...")
         # 이미 평가된 문서는 건너뛰기, 중복 과금 방지
-        if record["relevance_score"] is not None:
+        if str(record["relevance_score"]) != "nan":
             dcg.append(record["relevance_score"])
             data.append({"query": query, "document": record["document"], "score": record["relevance_score"], "reason": record["relevance_reason"]})
             continue
