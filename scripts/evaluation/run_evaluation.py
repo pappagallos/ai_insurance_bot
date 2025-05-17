@@ -92,6 +92,11 @@ for index, query in enumerate(queries):
 ndcg_score = [score * 100 for score in ndcg_score]
 avg_ndcg_score = sum(ndcg_score) / len(ndcg_score)
 
+
+pd.DataFrame(ndcg_score, columns=["ndcg score"]).to_csv("dataset_ndcg_score.csv", index=True)
+
+
 print("================================================")
 print("전체 질문에 대한 관련 문서 검색 평균 점수는 ", avg_ndcg_score, "점 입니다.")
 print("================================================")
+
