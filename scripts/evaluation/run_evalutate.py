@@ -68,6 +68,11 @@ for index, query in enumerate(queries):
     query_records = list(filter(lambda x: x["query"] == query, testset_records))
     for index, record in enumerate(query_records):
         print(f"({index + 1}/{len(query_records)}) Processing LLM Judgement...")
+        # 이미 평가된 문서는 건너뛰기, 중복 과금 방지
+        if record["relevance_score"] is not None:
+            dcg.append(record["relevance_score"])
+            data.append({"query": query, "document": record["document"], "score": record["relevance_score"], "reason": record["relevance_reason"]})
+            continue
 
         evaluate_prompt = "rulebase_0.0_to_1.0"
         evaluation = get_evaluation(evaluate_prompt, query, record["document"])
@@ -79,7 +84,7 @@ for index, query in enumerate(queries):
     ndcg = ndcg_at_k(dcg, 20)
     ndcg_score.append(ndcg)
 
-    print(f"nDCG@20 점수: {ndcg}점")
+    print(f"nDCG@20 점수: {ndcg * 100}점")
 
     updated_df = pd.DataFrame(testset_records)
     updated_df.to_csv("dataset.csv", index=True)
