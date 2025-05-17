@@ -1,14 +1,12 @@
 import os
 import sys
 import json
-import uuid
 import time
 import cohere
 import psycopg2
 import pandas as pd
 from openai import OpenAI
 from google import genai
-from requests.exceptions import HTTPError
 
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -102,9 +100,6 @@ for query in queries:
     #==================== 자신의 Retriever를 사용해주세요. ====================
     documents = get_cosine_result(cursor, query)
     #====================================================================
-
-    for document in documents:
-        document["document_id"] = str(uuid.uuid4())
 
     for rank, document in enumerate(documents):
         data.append({"query": query, "document": document, "rank": rank, "relevance_score": None, "relevance_reason": None})
