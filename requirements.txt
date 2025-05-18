@@ -18,7 +18,9 @@ cffi==1.17.1
 charset-normalizer==3.4.1
 click==8.1.8
 cohere==5.15.0
+contourpy==1.3.2
 cryptography==44.0.2
+cycler==0.12.1
 decorator==5.2.1
 distro==1.9.0
 elastic-transport==8.17.1
@@ -30,6 +32,7 @@ filelock==3.18.0
 Flask==3.1.0
 flask-cors==5.0.1
 flatbuffers==25.2.10
+fonttools==4.58.0
 frozenlist==1.6.0
 fsspec==2025.3.2
 gast==0.6.0
@@ -53,11 +56,13 @@ Jinja2==3.1.6
 jiter==0.9.0
 joblib==1.4.2
 keras==3.9.2
+kiwisolver==1.4.8
 lazy_loader==0.4
 libclang==18.1.1
 Markdown==3.8
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
+matplotlib==3.10.3
 matplotlib-inline==0.1.7
 mdurl==0.1.2
 ml_dtypes==0.5.1
@@ -88,6 +93,7 @@ pycparser==2.22
 pydantic==2.11.3
 pydantic_core==2.33.1
 Pygments==2.19.1
+pyparsing==3.2.3
 pypdf==5.4.0
 python-dateutil==2.9.0.post0
 pytz==2025.2
@@ -98,6 +104,7 @@ rsa==4.9.1
 scikit-image==0.25.2
 scikit-learn==1.6.1
 scipy==1.15.2
+seaborn==0.13.2
 selectivesearch==0.4
 six==1.17.0
 sniffio==1.3.1
