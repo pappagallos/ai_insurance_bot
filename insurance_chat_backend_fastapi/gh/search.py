@@ -1,13 +1,42 @@
 from elasticsearch import Elasticsearch
 from typing import List, Dict, Any
 import numpy as np
+from dataclasses import dataclass
+
+@dataclass
+class SearchResult:
+    id: str
+    score: float
+    insurance_name: str
+    insurance_type: str
+    index_title: str
+    chapter_title: str
+    article_title: str
+    content: str
+
+    def to_json(self) -> dict:
+        """
+        SearchResult 객체를 JSON 형식의 딕셔너리로 변환합니다.
+        
+        Returns:
+            JSON 형식의 딕셔너리
+        """
+        return {
+            "insurance_name": self.insurance_name + "(" + self.insurance_type + ")",
+            "title": {
+                "main": self.index_title,
+                "sub": self.chapter_title,
+                "sub_sub": self.article_title
+            },
+            "content": self.content
+        }
 
 class SearchProcessor:
     def __init__(self, es_host: str = "http://localhost:9200"):
         self.es = Elasticsearch(es_host)
         self.index_name = "insurance-data"
         
-    def hybrid_search(self, query: str, embedding_vector: List[float], k: int = 5) -> List[Dict[str, Any]]:
+    def hybrid_search(self, query: str, embedding_vector: List[float], k: int = 5) -> List[SearchResult]:
         """
         질문과 임베딩 벡터를 사용하여 hybrid search를 수행합니다.
         
@@ -17,7 +46,7 @@ class SearchProcessor:
             k: 반환할 결과의 수
             
         Returns:
-            검색 결과 리스트
+            SearchResult 객체 리스트
         """
         # Hybrid search 쿼리 구성
         search_query = {
@@ -31,34 +60,25 @@ class SearchProcessor:
                                 "query": query,
                                 "type": "most_fields",
                                 "fields": [
-                                    "insurance_name^3",
-                                    "insurance_type^2",
-                                    "index_title^2",
+                                    # "insurance_name",
+                                    # "insurance_type",
+                                    "index_title^1",
                                     "chapter_title^2",
-                                    "article_title^2"
+                                    "article_title^3",
+                                    "article_content^1"
                                 ],
                                 "boost": 0.3
                             }
-                        },
+                        }
                         # 벡터 기반 검색 (KNN)
-                        {
+                        , {
                             "knn": {
                                 "field":"embedding",
                                 "query_vector": embedding_vector,
-                                "k": 10
-                            },
-                            "boost":0.7
+                                "k": 10,
+                                "boost":0.7
+                            }
                         }
-                        # {
-                        #     "script_score": {
-                        #         "query": {"match_all": {}},
-                        #         "script": {
-                        #             "source": "cosineSimilarity(params.query_vector, 'embedding') + 1.0",
-                        #             "params": {"query_vector": embedding_vector}
-                        #         },
-                        #         "boost": 0.7
-                        #     }
-                        # }
                     ]
                 }
             }
@@ -69,20 +89,21 @@ class SearchProcessor:
                 index=self.index_name,
                 body=search_query
             )
-            
+            print("query={}".format(search_query))
             # 검색 결과 처리
             results = []
             for hit in response["hits"]["hits"]:
-                results.append({
-                    "id": hit["_id"],
-                    "score": hit["_score"],
-                    "insurance_name": hit["_source"].get("insurance_name", ""),
-                    "insurance_type": hit["_source"].get("insurance_type", ""),
-                    "index_title": hit["_source"].get("index_title", ""),
-                    "chapter_title": hit["_source"].get("chapter_title", ""),
-                    "article_title": hit["_source"].get("article_title", ""),
-                    "content": hit["_source"].get("content", "")
-                })
+                result = SearchResult(
+                    id=hit["_id"],
+                    score=hit["_score"],
+                    insurance_name=hit["_source"].get("insurance_name", ""),
+                    insurance_type=hit["_source"].get("insurance_type", ""),
+                    index_title=hit["_source"].get("index_title", ""),
+                    chapter_title=hit["_source"].get("chapter_title", ""),
+                    article_title=hit["_source"].get("article_title", ""),
+                    content=hit["_source"].get("article_content", "")
+                )
+                results.append(result)
             
             return results
             
