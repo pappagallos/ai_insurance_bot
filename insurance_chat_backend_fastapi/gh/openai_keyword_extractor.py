@@ -2,13 +2,23 @@ import os
 from typing import List, Dict, Any
 from openai import OpenAI
 from dotenv import load_dotenv
+import threading
 from .keyword import KeywordExtractor
 
 class OpenAIKeywordExtractor(KeywordExtractor):
     """
     OpenAI API를 사용하여 텍스트에서 SEO에 최적화된 키워드를 추출하는 클래스입니다.
     """
-    
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls):
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self, model: str = "o1-mini"):
         """
         초기화 메서드
@@ -16,16 +26,18 @@ class OpenAIKeywordExtractor(KeywordExtractor):
         Args:
             model: 사용할 OpenAI 모델 (기본값: "o1-mini")
         """
-        load_dotenv()
-        api_key = os.getenv("openai.api.key")
-        if not api_key:
-            raise ValueError("openai.api.key 환경 변수가 설정되지 않았습니다.")
-            
-        self.client = OpenAI(api_key=api_key)
-        self.model = model
-        print(f"OpenAI Keyword Extractor initialized with model: {model}")
+        if not hasattr(self, 'initialized'):
+            self.initialized = True
+            load_dotenv()
+            api_key = os.getenv("openai.api.key")
+            if not api_key:
+                raise ValueError("openai.api.key 환경 변수가 설정되지 않았습니다.")
+                
+            self.client = OpenAI(api_key=api_key)
+            self.model = model
+            print(f"OpenAI Keyword Extractor initialized with model: {model}")
     
-    def extract_keywords(self, text: str, top_n: int = 5) -> List[str]:
+    async def extract_keywords(self, text: str, top_n: int = 5) -> List[str]:
         """
         OpenAI API를 사용하여 텍스트에서 SEO에 최적화된 키워드를 추출합니다.
         

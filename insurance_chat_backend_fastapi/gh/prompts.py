@@ -1,3 +1,5 @@
+from typing import List
+import json
 def split_complex_question(user_query):
     return f"""
     다음은 복합 질문을 여러 개의 개별 질문으로 분해하는 예시입니다. 이 예시와 같은 방식으로 마지막 질문을 분해해주세요.
@@ -19,8 +21,29 @@ def split_complex_question(user_query):
     분해된 질문:
     """
 
+def rerank_documents(documents_with_question: List[dict], k=20):
+    """
+    주어진 문서의 연관도를 평가하여 문서의 질문별 index를 응답한다.
+    """
+    return f"""
+    Temparature: 0.3
+    ## Instructions
+    - **Your Answer MUST BE same JSON list format as the input.**
+    - The input consists of a question and a list of documents associated with it.
+    - You need to evaluate and rearrange the json documents given as input.
+    - Your answer must be in the same format as the input.
+    - The total sum of the 'documents' values should be {k}.
+    - Each 'question' must have at least 2 documents.
+    - **The answer should not contain anything other.**
+    ## Example:
+    - The response should answer each question and a list of the original index numbers within each document.
+    Example answer: For the question in question_1, 'documents': [A, B, C] is given as input, and the order associated with the question is [B, A, C], the response would be.
+    [{{'question':'question_1', 'doc_idx':[1, 0, 2]}}, ...]
 
-def question(json_list, user_query):
+    input: {documents_with_question}
+    """
+
+def question_json(json_list: List[dict], user_query: str):
     return f"""
     Temparature: 0.3
     ## Role
@@ -45,14 +68,39 @@ def question(json_list, user_query):
       {user_query}
     """
 
-def summary_answers(answers):
+def question(json_list: List[str], user_query: str):
+    docs = ",\n".join(json_list)
+    return f"""
+    Temparature: 0.3
+    ## Role
+    - Avoid unnecessary greetings.
+    - You're a communicator of accurate and detailed information.
+    - The user asks you a question to get information to buy cancer insurance.
+    ## Instructions
+    - You should actively use the information delivered in 'Context'.
+    - Answer the question in 'Question'.
+    - Answers should be in Korean
+    - Do not give uncertain information that may confuse the user.
+    - Avoid saying unnecessary things, and respond in as much detail as possible to what the user needs.
+    - If the information passed in 'Context' doesn't provide enough information for the user to answer, answer "Sorry, I don't know".
+    - Always include company and product information in context, except when you say you don't know.
+    - Except when answering "don't know", always include the source of the data you referenced at the end of your response, which is passed in the 'company', 'product' and 'file_name' in context
+    - If you include multiple companies and products, please compare them.
+    - If there are multiple companies, products, and file_names referenced, please list all companies, products, and file_names.
+
+    Context:
+      {docs}
+    Question:
+      {user_query}
+    """
+
+def summary_answers(split_questions, answers):
     return f"""
     Temperature: 0.3
     ## Role
     - You are a professional insurance agent specializing in cancer insurance.
     - You are responsible for providing comprehensive and accurate information about cancer insurance products.
     - You should synthesize multiple answers into a coherent and well-structured response.
-
     ## Instructions
     - Synthesize the following answers into a single, comprehensive response.
     - Maintain a professional and empathetic tone.
@@ -65,7 +113,8 @@ def summary_answers(answers):
     - Structure the response in a logical flow, starting with the most important information.
     - Use bullet points or numbered lists when presenting multiple items.
     - Keep the response concise but comprehensive.
-
+    ## User Questions:
+    {split_questions}
     ## Answers to Synthesize:
     {answers}
 

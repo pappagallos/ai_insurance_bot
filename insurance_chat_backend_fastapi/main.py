@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 import traceback
 from services.question_service import QuestionService
 from services.gh_question_service import GHQuestionService
+import asyncio
 
 class QuestionRequest(BaseModel):
     question: str
@@ -13,8 +14,9 @@ class SplitQuestionResponse(BaseModel):
 
 class KeywordResponse(BaseModel):
     keywords: List[str]
-    rule_based_keywords: List[str]
-    bert_keywords: List[str]
+    # rule_based_keywords: List[str]
+    # bert_keywords: List[str]
+    # openai_keywords: List[str]
 
 class SearchResponse(BaseModel):
     results: List[Dict[str, Any]]
