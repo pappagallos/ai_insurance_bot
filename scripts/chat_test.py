@@ -45,6 +45,5 @@ for result in rerank_result:
     print(result)
 print("--------------------------------")
 
-chat_complete = get_chat_result(query, rerank_result, None)
-
+chat_complete = get_chat_result(query, rerank_result)
 print("### Chat Complete")
