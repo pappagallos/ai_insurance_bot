@@ -6,7 +6,9 @@ from openai import OpenAI
 from google import genai
 import psycopg2
 
-from .config import GEMINI_API_KEY, OPENAI_API_KEY, COHERE_API_KEY, ES_HOST, ES_PORT, ES_USERNAME, ES_PASSWORD, ES_CA_CERT
+
+from config import GEMINI_API_KEY, OPENAI_API_KEY, COHERE_API_KEY, ES_HOST, ES_PORT, ES_USERNAME, ES_PASSWORD, ES_CA_CERT
+
 
 genai_client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -135,7 +137,7 @@ def get_keyword_in_query(query: str) -> list[str]:
     return json.loads(completion.choices[0].message.content)
 
 
-def get_chat_result(query: str, documents: list[str], get_stream_id: Callable[[], int]) -> Generator[str, None, None]:
+def get_chat_result(query: str, documents: list[str]) -> str:
     """
     챗 결과 반환
     """
@@ -168,7 +170,45 @@ def get_chat_result(query: str, documents: list[str], get_stream_id: Callable[[]
         chunk_text = chunk.choices[0].delta.content
         if chunk_text:  
             full_text += chunk_text
-            print(chunk_text)
+            print(chunk_text, end='', flush=True)
+    
+    return full_text
+
+
+def get_stream_chat(query: str, documents: list[str], get_stream_id: Callable[[], int]) -> Generator[str, None, None]:
+    """
+    챗 결과 반환
+    """
+    system_prompt = \
+    """
+    ### 목표
+    당신은 농협생명보험 영업 전문가 코리입니다. 사용자의 질문에 대해 보험 약관을 참고하여 답변하세요.
+
+    ### 조건
+    1. 문장 사이에 쉼표(,)를 사용하지 말고 마침표(.)로 문장을 분리해 주세요.
+    2. 제공된 Documents를 참고하여 답변하세요.
+    3. 답변은 최대한 친절하고 상세하고 명확하게 하세요. 그리고 가독성을 신경써서 구조화하여 한국어로 답변하세요.
+    4. 어느 조문을 인용해서 답변했는지 반드시 표기하세요. 표기할 때는 insurance_name, article_title, page_number를 답변에 포함하여 제공하세요.
+    5. Documents에 없는 내용이어서 모른다고 하는 답변은 사용자에게 관심없는 내용입니다. 사용자가 궁금해하지 않는 내용은 답변에 포함시키지 말고 질문에 사실로만 답변하세요.
+    6. 관련 Documents가 없을 경우 모른다고 하세요.
+    7. 관련 Doucments로 제공된 데이터를 기반으로만 답변하세요.
+    """
+    stream_result = openai_client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "assistant", "content": "### Documents: " + "\n".join(documents)},
+            {"role": "user", "content": "### Query: " + query},
+        ],
+        stream=True,
+        top_p=0.9,
+    )
+    full_text = ""
+    for chunk in stream_result:
+        chunk_text = chunk.choices[0].delta.content
+        if chunk_text:  
+            full_text += chunk_text
+            print(chunk_text, end='', flush=True)
             st4 = json.dumps({"type": "processing", "code": "3", "message": chunk_text})
             yield f"id: {get_stream_id()}\n"
             yield f"data: {st4}\n\n"
