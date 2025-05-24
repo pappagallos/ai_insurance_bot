@@ -1,6 +1,20 @@
 import json
-
+import psycopg2
+from google import genai
 from utils import get_chat_result, get_rerank_result, get_cosine_result
+from config import POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, GEMINI_API_KEY
+
+
+genai_client = genai.Client(api_key=GEMINI_API_KEY)
+
+
+postgres_connection = psycopg2.connect(
+    dbname=POSTGRES_DB,
+    user=POSTGRES_USER,
+    password=POSTGRES_PASSWORD,
+    host=POSTGRES_HOST
+)
+cursor = postgres_connection.cursor()
 
 
 # query = "챗봇이 알고 있는 암보험 상품들의 일반암 진단금액은 평균적으로 얼마 정도이며, 상품 간 차이는 큰 편인가요? 가장 높은 진단금과 낮은 진단금은 각각 얼마 수준인가요?"
@@ -16,7 +30,7 @@ print("### Query")
 print(query)
 print("--------------------------------")
 
-documents = get_cosine_result(query)
+documents = get_cosine_result(cursor, query)
 documents = [json.dumps(document, ensure_ascii=False) for document in documents]
 
 print("### Documents")
@@ -32,5 +46,4 @@ for result in rerank_result:
 print("--------------------------------")
 
 chat_complete = get_chat_result(query, rerank_result)
-
 print("### Chat Complete")
