@@ -1,6 +1,0 @@
-{
-    "python.analysis.extraPaths": [
-        "./scripts/py-hanspell",
-        "./scripts/pdftotree-0.5.0"
-    ]
-}
