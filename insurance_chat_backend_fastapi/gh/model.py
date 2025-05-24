@@ -32,7 +32,7 @@ class OpenAIAnswerProcessor:
             
     def question(self, query: str) -> str:
         response = self.client.chat.completions.create(
-            model="o1-mini",  # 사용할 OpenAI 모델
+            model="o4-mini",  # 사용할 OpenAI 모델
             messages=[
                 {"role": "user", "content": query}
             ],

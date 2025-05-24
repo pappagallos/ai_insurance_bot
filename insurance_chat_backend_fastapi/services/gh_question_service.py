@@ -169,6 +169,8 @@ class GHQuestionService(QuestionService):
 
     async def search_documents_with_split(self, user_query: str) -> List[Dict[str, Any]]:
         split_questions = self.split_question(user_query)
+        logger.info("split_questions: {}".format(len(split_questions)))
+        doc_count = 0
         documents = []
         for split_question in split_questions:
             docs = await self.search_documents(split_question)
@@ -178,42 +180,46 @@ class GHQuestionService(QuestionService):
                     "documents": docs
                 }
             )
+            doc_count += len(docs)
+        logger.info("doc found: {}".format(doc_count))
+        # # documents를 평가하여 연관도가 높은 순서로 재정렬. 이때 상품의 다양성을 확보해야함
+        # reranker_prompts = rerank_documents(documents, k=k)
+        # reranked_indexes = self.answer_processor.question(reranker_prompts)
+        # logger.info("reranked_indexes: {}".format(reranked_indexes))
+        # reranked_indexes = json.loads(reranked_indexes)
         
-        # documents를 평가하여 연관도가 높은 순서로 재정렬. 이때 상품의 다양성을 확보해야함
-        reranker_prompts = rerank_documents(documents, k=k)
-        reranked_indexes = json.loads(self.answer_processor.question(reranker_prompts))
+        # # Reorder documents by question and maintain original structure
+        # reordered_documents = []
         
-        # Reorder documents by question and maintain original structure
-        reordered_documents = []
+        # # Create a mapping of question to its documents
+        # question_to_docs = {doc_group["question"]: doc_group["documents"] for doc_group in documents}
         
-        # Create a mapping of question to its documents
-        question_to_docs = {doc_group["question"]: doc_group["documents"] for doc_group in documents}
-        
-        # Process each question in reranked_indexes
-        for question_data in reranked_indexes:
-            question = question_data["question"]
-            doc_idx = question_data["doc_idx"]
+        # # Process each question in reranked_indexes
+        # for question_data in reranked_indexes:
+        #     question = question_data["question"]
+        #     doc_idx = question_data["doc_idx"]
             
-            # Get original documents for this question
-            original_docs = question_to_docs.get(question, [])
+        #     # Get original documents for this question
+        #     original_docs = question_to_docs.get(question, [])
             
-            # Reorder documents for this question
-            reordered_question_docs = []
-            for idx in doc_idx:
-                if 0 <= idx < len(original_docs):
-                    reordered_question_docs.append(original_docs[idx])
+        #     # Reorder documents for this question
+        #     reordered_question_docs = []
+        #     for idx in doc_idx:
+        #         if 0 <= idx < len(original_docs):
+        #             reordered_question_docs.append(original_docs[idx])
             
-            # Add reordered documents for this question
-            reordered_documents.append({
-                "question": question,
-                "documents": reordered_question_docs
-            })
+        #     # Add reordered documents for this question
+        #     reordered_documents.append({
+        #         "question": question,
+        #         "documents": reordered_question_docs
+        #     })
         
-        return reordered_documents
+        # return reordered_documents
+        return documents
 
-    def generate_answer(self, user_query: str, documents: List[str]) -> str:
+    def generate_answer(self, user_query: str, documents: List[Dict[str, Any]]) -> str:
         """검색 결과를 바탕으로 답변 생성"""
-        last_question = question(documents, user_query)
+        last_question = question_json(documents, user_query)
         return self.answer_processor.question(last_question)
 
     def process_question(self, user_query: str) -> Dict[str, str]:
