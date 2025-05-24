@@ -1,0 +1,75 @@
+
+POST localhost:9200/_index_template/insurance_template
+{
+  "index_patterns": [
+    "insurance*"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "analysis": {
+          "tokenizer": {
+            "nori_tk": {
+              "type": "nori_tokenizer",
+              "decompound_mode": "mixed"
+            }
+          },
+          "analyzer": {
+            "nori_an": {
+              "type": "custom",
+              "tokenizer": "nori_tk",
+              "filter": [
+                "nori_part_of_speech",
+                "nori_readingform",
+                "lowercase"
+              ]
+            }
+          }
+        }
+      },
+      "mappings": {
+        "properties": {
+          "file_path": {
+            "type": "keyword"
+          },
+          "insurance_type": {
+            "analyzer": "standard",
+            "type": "text"
+          },
+          "index_title": {
+            "analyzer": "nori_tk",
+            "type": "text"
+          },
+          "article_title": {
+            "analyzer": "nori_tk",
+            "type": "text"
+          },
+          "article_content": {
+            "analyzer": "nori_tk",
+            "type": "text"
+          },
+          "company_name": {
+            "type": "keyword"
+          },
+          "chapter_title": {
+            "analyzer": "nori_tk",
+            "type": "text"
+          },
+          "insurance_name": {
+            "type": "keyword"
+          },
+          "embedding": {
+            "dims": 3072,
+            "type": "dense_vector"
+          }
+        }
+      }
+    },
+    "composed_of": [],
+    "priority": 1,
+    "version": 1,
+    "_meta": {
+      "description": "Template for insurance indices with OpenAI embedding dimensions"
+    }
+  }
+}
