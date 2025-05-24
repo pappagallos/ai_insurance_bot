@@ -6,3 +6,5 @@ __pycache__
 .ragatouille
 *.csv
 *.pdf
+*.png
+*.jpg
