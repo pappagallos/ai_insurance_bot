@@ -1,0 +1,10 @@
+.vscode
+.env
+__pycache__
+.venv
+.pytest_cache
+.ragatouille
+*.csv
+*.pdf
+*.png
+*.jpg

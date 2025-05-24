@@ -16,7 +16,7 @@ class GoogleEmbeddingProcessor:
         client = genai.Client(api_key=api_key)
         self.client = client
 
-    def get_embedding(self, content: str) -> list[float]:
+    async def get_embedding(self, content: str) -> list[float]:
         """
         벡터 테이블 생성 쿼리
         """

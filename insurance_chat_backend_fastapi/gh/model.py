@@ -4,40 +4,68 @@ from typing import List
 import time
 from dotenv import load_dotenv
 import tiktoken
+import logging
+import threading
 
+logger = logging.getLogger(__name__)
 class OpenAIAnswerProcessor:
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls):
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self):
-        load_dotenv()
-        api_key = os.getenv("openai.api.key")
-        if not api_key:
-            raise ValueError("openai.api.key 환경 변수가 설정되지 않았습니다.")
-        client = OpenAI(api_key=api_key)
-        print("Open AI is ready")
-        self.client = client
-        
+        if not hasattr(self, 'initialized'):
+            self.initialized = True
+            load_dotenv()
+            api_key = os.getenv("openai.api.key")
+            if not api_key:
+                raise ValueError("openai.api.key 환경 변수가 설정되지 않았습니다.")
+            client = OpenAI(api_key=api_key)
+            print("Open AI is ready")
+            self.client = client
+            
     def question(self, query: str) -> str:
         response = self.client.chat.completions.create(
-            model="o1-mini",  # 사용할 OpenAI 모델
+            model="o4-mini",  # 사용할 OpenAI 모델
             messages=[
                 {"role": "user", "content": query}
             ],
         )
+        logger.info("[R] response: {}".format(response.choices[0].message.content))
         return response.choices[0].message.content
 
 
 class OpenAIEmbeddingProcessor:
     MODEL_NAME = "text-embedding-3-small"
-    def __init__(self):
-        load_dotenv()
-        api_key = os.getenv("openai.api.key")
-        if not api_key:
-            raise ValueError("openai.api.key 환경 변수가 설정되지 않았습니다.")
-        client = OpenAI(api_key=api_key)
-        print("Open AI is ready")
-        self.client = client
-        self.encoding = tiktoken.encoding_for_model(self.MODEL_NAME)
+    _instance = None
+    _lock = threading.Lock()
 
-    def get_embedding(self, text: str) -> List[float]:
+    def __new__(cls):
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        if not hasattr(self, 'initialized'):
+            self.initialized = True
+            load_dotenv()
+            api_key = os.getenv("openai.api.key")
+            if not api_key:
+                raise ValueError("openai.api.key 환경 변수가 설정되지 않았습니다.")
+            client = OpenAI(api_key=api_key)
+            print("Open AI is ready")
+            self.client = client
+            self.encoding = tiktoken.encoding_for_model(self.MODEL_NAME)
+
+    async def get_embedding(self, text: str) -> List[float]:
         """OpenAI API를 사용하여 텍스트를 임베딩합니다."""
         try:
             # 텍스트가 너무 길면 청크로 나누어 처리

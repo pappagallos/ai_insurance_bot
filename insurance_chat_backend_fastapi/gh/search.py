@@ -2,6 +2,9 @@ from elasticsearch import Elasticsearch
 from typing import List, Dict, Any
 import numpy as np
 from dataclasses import dataclass
+import logging
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class SearchResult:
@@ -34,7 +37,7 @@ class SearchResult:
 class SearchProcessor:
     def __init__(self, es_host: str = "http://localhost:9200"):
         self.es = Elasticsearch(es_host)
-        self.index_name = "insurance-data"
+        self.index_name = "insurance-data1"
         
     def hybrid_search(self, query: str, embedding_vector: List[float], k: int = 5) -> List[SearchResult]:
         """
@@ -65,9 +68,10 @@ class SearchProcessor:
                                     "index_title^1",
                                     "chapter_title^2",
                                     "article_title^3",
-                                    "article_content^1"
+                                    "article_content^0.5"
                                 ],
-                                "boost": 0.3
+                                "operator": "OR",
+                                "boost": 0.005
                             }
                         }
                         # 벡터 기반 검색 (KNN)
@@ -75,21 +79,20 @@ class SearchProcessor:
                             "knn": {
                                 "field":"embedding",
                                 "query_vector": embedding_vector,
-                                "k": 10,
-                                "boost":0.7
+                                "k": k
                             }
                         }
                     ]
                 }
             }
         }
-        
+        logger.info("[R] search query: {}".format(search_query))
         try:
             response = self.es.search(
                 index=self.index_name,
                 body=search_query
             )
-            print("query={}".format(search_query))
+            #print("query={}".format(search_query))
             # 검색 결과 처리
             results = []
             for hit in response["hits"]["hits"]:
@@ -104,10 +107,11 @@ class SearchProcessor:
                     content=hit["_source"].get("article_content", "")
                 )
                 results.append(result)
-            
+            logger.info("Found {} documents".format(len(results)))
+            logger.debug("Search\\n query: {}\\n results: {}".format(search_query, results))
             return results
             
         except Exception as e:
-            print(f"검색 중 오류 발생: {e}")
+            logger.error(f"검색 중 오류 발생: {e}")
             return []
             
